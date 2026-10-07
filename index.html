@@ -1,803 +1,1227 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>GzCalendar | Infinite Timeline • BCE to ∞</title>
-  <link href="https://fonts.googleapis.com/css2?family=Anek+Malayalam:wght@100;200;300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Anek Malayalam', 'Segoe UI', system-ui, sans-serif;
-      transition: background 0.2s ease, color 0.2s ease;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#ff4d00">
+<meta name="description" content="Horolix — infinite retro calendar from BCE to ∞">
+<title>Horolix · Retro Calendar · BCE to ∞</title>
 
-    body {
-      height: 100vh;
-      background: #f8fafc;
-      overflow: hidden;
+<script>
+  (function () {
+    try {
+      document.documentElement.setAttribute(
+        "data-theme",
+        localStorage.getItem("horolix_theme") || "light"
+      );
+    } catch (e) {
+      document.documentElement.setAttribute("data-theme", "light");
     }
+  })();
+</script>
 
-    body.dark {
-      background: #0f172a;
-      color: #e2e8f0;
-    }
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=VT323&display=swap" rel="stylesheet">
 
-    .app {
-      display: flex;
-      height: 100vh;
-    }
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23ff4d00'/%3E%3Ctext x='50' y='72' font-family='monospace' font-size='64' font-weight='bold' text-anchor='middle' fill='%23fff'%3EH%3C/text%3E%3C/svg%3E">
 
-    /* Sidebar */
+<style>
+  /* ============================================================
+     HOROLIX — design tokens
+     ============================================================ */
+  :root,
+  html[data-theme="light"] {
+    --paper:       #f4f1e8;
+    --paper-2:     #ebe6d6;
+    --ink:         #1a1a1a;
+    --ink-soft:    #333028;
+    --mute:        #8a8577;
+    --line:        #1a1a1a;
+    --line-soft:   #c8c2b0;
+
+    --accent:      #ff4d00;
+    --accent-soft: #ffe4d6;
+    --accent2:     #ffd400;
+    --accent3:     #0055ff;
+
+    --hover:       #ebe6d6;
+    --today-bg:    #ff4d00;
+    --today-fg:    #ffffff;
+    --chip-fg:     #ffffff;
+
+    --shadow:      4px 4px 0 #1a1a1a;
+    --grain-1:     rgba(26, 26, 26, 0.025);
+    --grain-2:     rgba(26, 26, 26, 0.02);
+
+    --scroll-track: #f4f1e8;
+    --scroll-thumb: #1a1a1a;
+
+    color-scheme: light;
+  }
+
+  html[data-theme="dark"] {
+    --paper:       #15130e;
+    --paper-2:     #1e1a14;
+    --ink:         #f5efdc;
+    --ink-soft:    #cfc8b0;
+    --mute:        #8a8370;
+    --line:        #f5efdc;
+    --line-soft:   #3a352b;
+
+    --accent:      #ff7a33;
+    --accent-soft: #3a1f0e;
+    --accent2:     #ffd94a;
+    --accent3:     #4aa3ff;
+
+    --hover:       #221e16;
+    --today-bg:    #ff7a33;
+    --today-fg:    #15130e;
+    --chip-fg:     #ffffff;
+
+    --shadow:      4px 4px 0 #f5efdc;
+    --grain-1:     rgba(245, 239, 220, 0.035);
+    --grain-2:     rgba(245, 239, 220, 0.02);
+
+    --scroll-track: #15130e;
+    --scroll-thumb: #f5efdc;
+
+    color-scheme: dark;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    border-radius: 0 !important;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html, body { height: 100%; width: 100%; }
+
+  body {
+    height: 100vh;
+    height: 100dvh;
+    background: var(--paper);
+    color: var(--ink);
+    overflow: hidden;
+    font-size: 14px;
+    line-height: 1.35;
+    font-weight: 500;
+    background-image:
+      repeating-linear-gradient(0deg, var(--grain-1) 0 1px, transparent 1px 3px),
+      repeating-linear-gradient(90deg, var(--grain-2) 0 1px, transparent 1px 4px);
+  }
+
+  .app {
+    display: flex;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    position: relative;
+  }
+
+  /* ============================================================
+     MENU TOGGLE + BACKDROP (mobile)
+     ============================================================ */
+  #menuToggle {
+    display: none;
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 300;
+    background: var(--accent);
+    color: #fff;
+    border: 2px solid var(--ink);
+    padding: 0.5rem 0.8rem;
+    font-weight: 800;
+    font-size: 1rem;
+    box-shadow: 3px 3px 0 var(--ink);
+    cursor: pointer;
+  }
+  #menuToggle:active { box-shadow: none; transform: translate(3px, 3px); }
+
+  #sideBackdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 199;
+    opacity: 0;
+    transition: opacity 0.15s linear;
+  }
+  #sideBackdrop.show { display: block; opacity: 1; }
+
+  /* ============================================================
+     SIDEBAR
+     ============================================================ */
+  .sidebar {
+    width: 320px;
+    flex-shrink: 0;
+    background: var(--paper);
+    border-right: 3px solid var(--line);
+    padding: 1.25rem 1.1rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    overflow-y: auto;
+    position: relative;
+    min-height: 0;
+    z-index: 200;
+  }
+
+  .sidebar::after {
+    content: "";
+    position: absolute;
+    top: 0; right: -3px;
+    width: 3px; height: 100%;
+    background: repeating-linear-gradient(180deg,
+      var(--accent) 0 12px, var(--ink) 12px 24px);
+    opacity: 0.7;
+    pointer-events: none;
+  }
+
+  .sidebar h1 {
+    font-family: 'VT323', 'JetBrains Mono', monospace;
+    font-size: 2.6rem;
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height: 0.9;
+    color: var(--ink);
+    border-bottom: 3px solid var(--line);
+    padding-bottom: 0.5rem;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .sidebar h1::before {
+    content: "◼";
+    color: var(--accent);
+    font-size: 1rem;
+    transform: translateY(-4px);
+  }
+  .sidebar h1::after {
+    content: "·HOROLIX";
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.55rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    color: var(--mute);
+    align-self: flex-end;
+    margin-left: auto;
+  }
+
+  button {
+    padding: 0.65rem 0.9rem;
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: 2px solid var(--ink);
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'JetBrains Mono', monospace;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    user-select: none;
+  }
+  button:hover { background: var(--ink); color: var(--paper); }
+  button:active { transform: translate(2px, 2px); }
+
+  #newEventBtn {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--ink);
+    font-weight: 800;
+    padding: 0.85rem 1rem;
+    font-size: 0.85rem;
+    box-shadow: var(--shadow);
+  }
+  #newEventBtn:hover { background: var(--ink); color: var(--accent); }
+  #newEventBtn:active { box-shadow: none; transform: translate(4px, 4px); }
+
+  /* Date readout box */
+  .dateBox {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 0.9rem 0.75rem;
+    text-align: center;
+    border: 2px solid var(--ink);
+    position: relative;
+    overflow: hidden;
+  }
+  .dateBox::before {
+    content: "◉ TODAY · IST";
+    position: absolute;
+    top: 4px; left: 8px;
+    font-size: 0.55rem;
+    letter-spacing: 0.15em;
+    color: var(--accent2);
+    font-weight: 700;
+  }
+  #todayDateBig {
+    font-family: 'VT323', monospace;
+    font-size: 2.4rem;
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    line-height: 1;
+    color: var(--accent2);
+    text-shadow: 0 0 8px rgba(255, 217, 74, 0.45);
+    margin-top: 0.5rem;
+    font-variant-numeric: tabular-nums;
+  }
+  #todayDateSub {
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-top: 6px;
+    color: #9a9484;
+  }
+
+  /* Inputs */
+  input, select, textarea {
+    width: 100%;
+    padding: 0.6rem 0.7rem;
+    border: 2px solid var(--ink);
+    background: var(--paper);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    outline: none;
+    color: var(--ink);
+    text-transform: uppercase;
+  }
+  input::placeholder, textarea::placeholder {
+    color: var(--mute);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  input:focus, select:focus, textarea:focus {
+    background: var(--accent2);
+    color: #1a1a1a;
+  }
+
+  .year-row { display: flex; align-items: stretch; }
+  .year-row button {
+    border: 2px solid var(--ink);
+    padding: 0 10px;
+    min-width: 56px;
+    font-weight: 800;
+    font-size: 0.7rem;
+  }
+  .year-row button:first-child { border-right: none; }
+  .year-row button:last-child  { border-left: none; }
+  .year-row select {
+    border-left: 2px solid var(--ink);
+    border-right: 2px solid var(--ink);
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    padding: 0.55rem 0.4rem;
+  }
+
+  .decade-row { display: flex; gap: 6px; }
+  .decade-row button {
+    flex: 1; padding: 0.5rem;
+    font-size: 0.68rem; font-weight: 700;
+  }
+
+  .importExport { display: flex; gap: 6px; }
+  .importExport button {
+    flex: 1; font-size: 0.68rem;
+    padding: 0.55rem 0.4rem;
+  }
+
+  .sidebar-foot {
+    margin-top: auto;
+    padding-top: 0.75rem;
+    border-top: 2px dashed var(--mute);
+    font-size: 0.6rem;
+    text-align: center;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--mute);
+    font-weight: 700;
+  }
+  .sidebar-foot span { color: var(--accent); }
+
+  /* ============================================================
+     MAIN
+     ============================================================ */
+  .calendarContainer {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--paper);
+    min-width: 0;
+    min-height: 0;
+  }
+
+  .calendarHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.85rem 1.5rem;
+    background: var(--paper);
+    border-bottom: 3px solid var(--line);
+    gap: 1rem;
+    flex-wrap: wrap;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .calendarHeader::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: -3px;
+    height: 3px;
+    background: repeating-linear-gradient(90deg,
+      var(--accent) 0 20px, var(--accent3) 20px 40px, var(--ink) 40px 60px);
+    opacity: 0.5;
+  }
+
+  .leftHeader, .rightHeader {
+    display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
+  }
+  .leftHeader button, .rightHeader button {
+    padding: 0.5rem 0.85rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    box-shadow: 3px 3px 0 var(--ink);
+  }
+  .leftHeader button:active, .rightHeader button:active {
+    box-shadow: none;
+    transform: translate(3px, 3px);
+  }
+
+  .viewBtn {
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    color: var(--ink);
+  }
+  .viewBtn.active {
+    background: var(--ink);
+    color: var(--paper);
+    box-shadow: none;
+    transform: translate(3px, 3px);
+  }
+
+  .calendarHeader h2 {
+    font-family: 'VT323', 'JetBrains Mono', monospace;
+    font-size: 1.9rem;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink);
+    line-height: 1;
+  }
+
+  .weekDays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background: var(--ink);
+    color: var(--paper);
+    padding: 0.5rem 0;
+    text-align: center;
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    flex-shrink: 0;
+  }
+  .weekDays div {
+    border-right: 1px solid var(--paper);
+    opacity: 0.85;
+  }
+  .weekDays div:last-child { border-right: none; }
+
+  #calendarGrid {
+    flex: 1 1 auto;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-auto-rows: minmax(115px, auto);
+    overflow-y: auto;
+    background: var(--paper);
+    border-left: 3px solid var(--line);
+    border-right: 3px solid var(--line);
+    min-height: 0;
+  }
+
+  .dayCell {
+    background: var(--paper);
+    border-right: 2px solid var(--ink);
+    border-bottom: 2px solid var(--ink);
+    padding: 8px;
+    overflow-y: auto;
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-height: 60px;
+  }
+  .dayCell:hover { background: var(--hover); }
+  .dayCell.today-highlight {
+    background: var(--today-bg);
+    color: var(--today-fg);
+  }
+  .dayCell.today-highlight .dayNumber { color: var(--today-fg); }
+
+  .dayNumber {
+    font-family: 'VT323', 'JetBrains Mono', monospace;
+    font-weight: 400;
+    font-size: 1.35rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    letter-spacing: 0.02em;
+    color: var(--ink);
+  }
+
+  .today-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.55rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border: 1px solid #fff;
+  }
+  html[data-theme="dark"] .today-icon {
+    background: var(--today-fg);
+    color: var(--today-bg);
+    border-color: var(--today-fg);
+  }
+
+  .eventChip {
+    padding: 4px 6px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--chip-fg);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: grab;
+    border: 1px solid var(--ink);
+  }
+  .eventChip:active { cursor: grabbing; }
+
+  /* ============================================================
+     MODAL
+     ============================================================ */
+  .modal {
+    position: fixed; inset: 0;
+    background: rgba(0, 0, 0, 0.78);
+    display: flex; justify-content: center; align-items: center;
+    z-index: 1000;
+    padding: 1rem;
+  }
+  .hidden { display: none !important; }
+
+  .modalContent {
+    width: 500px;
+    max-width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    background: var(--paper);
+    padding: 1.5rem 1.5rem 1.25rem;
+    display: flex; flex-direction: column; gap: 12px;
+    border: 3px solid var(--ink);
+    box-shadow: 10px 10px 0 var(--ink);
+    position: relative;
+    color: var(--ink);
+  }
+  .modalContent::before {
+    content: "";
+    position: absolute;
+    top: -12px; left: 20px;
+    width: 60px; height: 8px;
+    background: var(--accent2);
+    border: 2px solid var(--ink);
+    transform: rotate(-3deg);
+  }
+
+  .modalContent h2 {
+    font-family: 'VT323', monospace;
+    font-size: 2rem;
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 0.4rem;
+    margin-bottom: 0.25rem;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .modalContent h2::before {
+    content: "▶";
+    color: var(--accent);
+    font-size: 0.9rem;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .modalActions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+  .modalActions button {
+    flex: 1 1 100px;
+    padding: 0.75rem 1rem;
+    font-weight: 800;
+    font-size: 0.75rem;
+    box-shadow: 3px 3px 0 var(--ink);
+  }
+  .modalActions button:active { box-shadow: none; transform: translate(3px, 3px); }
+
+  #saveEventBtn {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--ink);
+  }
+  #saveEventBtn:hover { background: var(--ink); color: var(--accent); }
+
+  #deleteEventBtn {
+    background: var(--paper);
+    color: var(--ink);
+    border-color: var(--ink);
+  }
+  #deleteEventBtn:hover {
+    background: #b30000;
+    color: #fff;
+    border-color: #b30000;
+  }
+
+  /* ============================================================
+     SCROLLBARS
+     ============================================================ */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: var(--scroll-track); border-left: 2px solid var(--ink); }
+  ::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border: 2px solid var(--scroll-track); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+  /* ============================================================
+     RESPONSIVE
+     ============================================================ */
+  @media (max-width: 1024px) {
+    .sidebar { width: 280px; padding: 1rem; }
+    .sidebar h1 { font-size: 2.3rem; }
+    #todayDateBig { font-size: 2rem; }
+  }
+
+  @media (max-width: 820px) {
+    #menuToggle { display: inline-flex; }
     .sidebar {
-      width: 320px;
-      background: rgba(255,255,255,0.96);
-      backdrop-filter: blur(0px);
-      padding: 1.5rem;
-      border-right: 1px solid #e2e8f0;
-      display: flex;
-      flex-direction: column;
-      gap: 1.25rem;
-      overflow-y: auto;
-      z-index: 10;
-    }
-
-    body.dark .sidebar {
-      background: #1e293b;
-      border-right-color: #334155;
-    }
-
-    .sidebar h1 {
-      font-size: 2rem;
-      font-weight: 800;
-      background: linear-gradient(135deg, #4f46e5, #7c3aed, #ec489a);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      letter-spacing: -0.5px;
-    }
-
-    button, .sidebar button {
-      padding: 0.6rem 1rem;
-      border-radius: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      border: none;
-      background: #f1f5f9;
-      transition: 0.2s;
-      font-family: 'Anek Malayalam', sans-serif;
-    }
-
-    body.dark button {
-      background: #334155;
-      color: #f1f5f9;
-    }
-
-    #newEventBtn {
-      background: #4f46e5;
-      color: white;
-      box-shadow: 0 4px 8px rgba(79,70,229,0.2);
-    }
-
-    .clockBox {
-      background: #eef2ff;
-      padding: 1rem;
-      border-radius: 24px;
-      text-align: center;
-    }
-
-    body.dark .clockBox {
-      background: #0f172a;
-      border: 1px solid #334155;
-    }
-
-    #liveClock {
-      font-size: 1.8rem;
-      font-weight: 700;
-      letter-spacing: 1px;
-    }
-
-    .searchBox input, select, textarea {
-      width: 100%;
-      padding: 10px;
-      border-radius: 16px;
-      border: 1px solid #cbd5e1;
-      background: white;
-      font-family: 'Anek Malayalam', sans-serif;
-      font-weight: 400;
-    }
-
-    body.dark .searchBox input,
-    body.dark select,
-    body.dark textarea {
-      background: #0f172a;
-      border-color: #475569;
-      color: white;
-    }
-
-    .year-range {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-    }
-    .year-range button {
-      padding: 6px 12px;
-      font-size: 0.8rem;
-    }
-
-    .importExport {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .importExport button {
-      flex: 1;
-      font-size: 0.8rem;
-    }
-
-    /* Main Calendar */
-    .calendarContainer {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    .calendarHeader {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1rem 1.5rem;
-      background: white;
-      border-bottom: 1px solid #e2e8f0;
-      flex-wrap: wrap;
-    }
-
-    body.dark .calendarHeader {
-      background: #1e293b;
-      border-bottom-color: #334155;
-    }
-
-    .leftHeader, .rightHeader {
-      display: flex;
-      gap: 8px;
-    }
-
-    .viewBtn {
-      background: #f1f5f9;
-      padding: 6px 14px;
-      font-weight: 600;
-    }
-
-    .viewBtn.active {
-      background: #4f46e5;
-      color: white;
-    }
-
-    .weekDays {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      background: white;
-      font-weight: 700;
-      padding: 0.75rem 0;
-      text-align: center;
-      border-bottom: 1px solid #e2e8f0;
-    }
-
-    body.dark .weekDays {
-      background: #1e293b;
-    }
-
-    #calendarGrid {
-      flex: 1;
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      grid-auto-rows: minmax(110px, auto);
-      overflow-y: auto;
-      background: #f1f5f9;
-    }
-
-    .dayCell {
-      background: white;
-      border: 1px solid #e9eef3;
-      padding: 8px;
-      overflow-y: auto;
-      cursor: pointer;
-      transition: 0.1s;
-      position: relative;
-    }
-
-    body.dark .dayCell {
-      background: #1e293b;
-      border-color: #334155;
-    }
-
-    .dayCell:hover {
-      background: #fef9e3;
-    }
-
-    .dayNumber {
-      font-weight: 700;
-      font-size: 0.9rem;
-      margin-bottom: 6px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-
-    .today-icon {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: #4f46e5;
-      color: white;
-      font-size: 0.7rem;
-      font-weight: bold;
-      border-radius: 20px;
-      padding: 2px 8px;
-      gap: 4px;
-      box-shadow: 0 2px 6px rgba(79,70,229,0.3);
-    }
-
-    .today-icon::before {
-      content: "📍";
-      font-size: 0.7rem;
-    }
-
-    body.dark .today-icon {
-      background: #7c3aed;
-    }
-
-    .dayCell.today-highlight {
-      background: linear-gradient(145deg, #fef9c3, #fef3c7);
-      border: 2px solid #eab308;
-    }
-
-    body.dark .dayCell.today-highlight {
-      background: linear-gradient(145deg, #1e3a8a, #1e40af);
-      border: 2px solid #f59e0b;
-    }
-
-    .eventChip {
-      padding: 4px 6px;
-      margin-top: 4px;
-      font-size: 11px;
-      border-radius: 16px;
-      color: white;
-      font-weight: 600;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      cursor: grab;
-    }
-
-    .modal {
       position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(4px);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
+      top: 0; left: 0;
+      height: 100vh; height: 100dvh;
+      width: 300px;
+      max-width: 85vw;
+      transform: translateX(-100%);
+      transition: transform 0.2s ease-out;
+      box-shadow: 6px 0 0 rgba(0, 0, 0, 0.2);
     }
-
-    .hidden {
-      display: none;
+    .sidebar.open { transform: translateX(0); }
+    .calendarHeader { padding-left: 4.5rem; }
+    .calendarHeader h2 {
+      font-size: 1.5rem;
+      flex-basis: 100%;
+      order: -1;
+      margin-bottom: 0.25rem;
     }
+    #calendarGrid { grid-auto-rows: minmax(85px, auto); }
+    .dayNumber { font-size: 1.1rem; }
+    .eventChip { font-size: 0.58rem; padding: 3px 4px; }
+  }
 
+  @media (max-width: 560px) {
+    body { font-size: 13px; }
+    #menuToggle { top: 8px; left: 8px; padding: 0.45rem 0.65rem; font-size: 0.9rem; }
+    .calendarHeader { padding: 0.6rem 0.75rem 0.6rem 3.5rem; gap: 0.5rem; }
+    .calendarHeader h2 { font-size: 1.25rem; }
+    .leftHeader button, .rightHeader button, .viewBtn {
+      padding: 0.4rem 0.6rem;
+      font-size: 0.62rem;
+      box-shadow: 2px 2px 0 var(--ink);
+    }
+    .leftHeader button:active, .rightHeader button:active, .viewBtn.active {
+      box-shadow: none;
+      transform: translate(2px, 2px);
+    }
+    .weekDays {
+      font-size: 0.55rem;
+      letter-spacing: 0.08em;
+      padding: 0.35rem 0;
+    }
+    #calendarGrid {
+      grid-auto-rows: minmax(70px, auto);
+      border-left-width: 2px;
+      border-right-width: 2px;
+    }
+    .dayCell { padding: 4px; gap: 2px; }
+    .dayNumber { font-size: 0.95rem; gap: 4px; }
+    .today-icon { font-size: 0.5rem; padding: 1px 4px; letter-spacing: 0.05em; }
+    .eventChip { font-size: 0.55rem; padding: 2px 4px; letter-spacing: 0.02em; }
     .modalContent {
-      width: 480px;
-      max-width: 90vw;
-      background: white;
-      padding: 1.8rem;
-      border-radius: 32px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      box-shadow: 0 25px 40px rgba(0,0,0,0.25);
+      padding: 1rem;
+      gap: 10px;
+      box-shadow: 6px 6px 0 var(--ink);
     }
-
-    body.dark .modalContent {
-      background: #1e293b;
-    }
-
-    .modalActions {
-      display: flex;
-      gap: 12px;
-      margin-top: 8px;
-    }
-
+    .modalContent h2 { font-size: 1.5rem; }
     .modalActions button {
-      flex: 1;
-      font-weight: 600;
+      flex: 1 1 100%;
+      padding: 0.7rem;
+      font-size: 0.7rem;
     }
+  }
 
-    @media (max-width: 800px) {
-      .sidebar {
-        width: 280px;
-      }
-    }
-    @media (max-width: 680px) {
-      .sidebar {
-        display: none;
-      }
-    }
-
-    input, select, textarea, button, .eventChip, .dayNumber, .weekDays div {
-      font-family: 'Anek Malayalam', sans-serif;
-    }
-    
-    h1, h2, h3, .modalContent h2 {
-      font-family: 'Anek Malayalam', sans-serif;
-      font-weight: 700;
-    }
-    
-    .year-selector-wrapper {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-    }
-    .year-nav-btn {
-      background: #e2e8f0;
-      padding: 6px 10px;
-      font-size: 1rem;
-    }
-    body.dark .year-nav-btn {
-      background: #475569;
-    }
-  </style>
+  @media (max-width: 380px) {
+    .calendarHeader h2 { font-size: 1.05rem; }
+    .viewBtn { padding: 0.35rem 0.5rem; font-size: 0.58rem; }
+    .dayNumber { font-size: 0.85rem; }
+    .eventChip { font-size: 0.5rem; }
+  }
+</style>
 </head>
 <body>
 
+<button id="menuToggle" aria-label="Toggle menu">☰</button>
+<div id="sideBackdrop"></div>
+
 <div class="app">
-  <aside class="sidebar">
-    <h1>✨ GzCalendar</h1>
+  <aside class="sidebar" id="sidebar">
+    <h1>Horolix</h1>
     <button id="newEventBtn">+ New Event</button>
-    <div class="clockBox">
-      <div id="liveClock"></div>
-      <div id="liveDate"></div>
+
+    <div class="dateBox">
+      <div id="todayDateBig">---</div>
+      <div id="todayDateSub">---</div>
     </div>
-    <div class="searchBox">
-      <input type="text" id="searchInput" placeholder="🔍 Search events...">
+
+    <input type="text" id="searchInput" placeholder="SEARCH EVENTS">
+
+    <div class="year-row">
+      <button id="yearMinusBtn" title="-100 years">–100</button>
+      <select id="yearSelector" aria-label="Year"></select>
+      <button id="yearPlusBtn" title="+100 years">+100</button>
     </div>
-    <select id="categoryFilter">
-      <option value="all">📂 All Categories</option>
-      <option value="work">💼 Work</option>
-      <option value="personal">🧘 Personal</option>
-      <option value="school">📚 School</option>
-      <option value="other">✨ Other</option>
-    </select>
-    
-    <!-- Infinite Year Selector: BCE to Infinity -->
-    <div class="year-selector-wrapper">
-      <button id="yearMinusBtn" class="year-nav-btn" title="Jump -100 years">⏪ -100</button>
-      <select id="yearSelector" style="flex:1;"></select>
-      <button id="yearPlusBtn" class="year-nav-btn" title="Jump +100 years">+100 ⏩</button>
+
+    <div class="decade-row">
+      <button id="decadeMinusBtn">–10 YRS</button>
+      <button id="decadePlusBtn">+10 YRS</button>
     </div>
-    <div style="display: flex; gap: 6px; margin-top: 4px;">
-      <button id="decadeMinusBtn" class="year-nav-btn">-10 yrs</button>
-      <button id="decadePlusBtn" class="year-nav-btn">+10 yrs</button>
-    </div>
-    
-    <div class="themeSection">
-      <button id="themeBtn">🌙 Dark Mode</button>
-    </div>
+
+    <button id="themeBtn">◐ DARK MODE</button>
+
     <div class="importExport">
-      <button id="exportBtn">📤 Export</button>
-      <input type="file" id="importFile" hidden accept=".json">
-      <button id="importBtn">📥 Import</button>
+      <button id="exportBtn">▲ EXPORT</button>
+      <input type="file" id="importFile" hidden accept=".json,application/json">
+      <button id="importBtn">▼ IMPORT</button>
     </div>
-    <div style="font-size: 11px; text-align: center; opacity:0.7;">🗓️ BCE • CE • ∞ Timeline</div>
+
+    <div class="sidebar-foot">BCE <span>•</span> CE <span>•</span> ∞</div>
   </aside>
 
   <main class="calendarContainer">
     <header class="calendarHeader">
       <div class="leftHeader">
-        <button id="prevBtn">◀</button>
-        <button id="todayBtn">Today</button>
-        <button id="nextBtn">▶</button>
+        <button id="prevBtn" aria-label="Previous">◀</button>
+        <button id="todayBtn">TODAY</button>
+        <button id="nextBtn" aria-label="Next">▶</button>
       </div>
-      <h2 id="monthYear"></h2>
+      <h2 id="monthYear">---</h2>
       <div class="rightHeader">
-        <button class="viewBtn active" data-view="month">Month</button>
-        <button class="viewBtn" data-view="week">Week</button>
-        <button class="viewBtn" data-view="day">Day</button>
-        <button class="viewBtn" data-view="agenda">Agenda</button>
+        <button class="viewBtn active" data-view="month">MONTH</button>
+        <button class="viewBtn" data-view="week">WEEK</button>
+        <button class="viewBtn" data-view="day">DAY</button>
+        <button class="viewBtn" data-view="agenda">AGENDA</button>
       </div>
     </header>
+
     <div class="weekDays">
-      <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+      <div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div>
     </div>
+
     <div id="calendarGrid"></div>
   </main>
 </div>
 
-<!-- Event Modal -->
 <div class="modal hidden" id="eventModal">
   <div class="modalContent">
-    <h2 id="modalTitle">✏️ Event</h2>
-    <input type="text" id="eventTitle" placeholder="Title *">
-    <textarea id="eventDescription" placeholder="Description"></textarea>
+    <h2 id="modalTitle">EVENT</h2>
+    <input type="text" id="eventTitle" placeholder="TITLE *" autocomplete="off">
+    <textarea id="eventDescription" placeholder="DESCRIPTION" rows="3"></textarea>
     <input type="date" id="eventDate">
-    <input type="time" id="eventTime">
-    <select id="eventCategory">
-      <option value="work">Work</option><option value="personal">Personal</option><option value="school">School</option><option value="other">Other</option>
-    </select>
     <select id="recurringSelect">
-      <option value="none">No repeat</option><option value="daily">Daily</option><option value="weekly">Weekly</option><option value="monthly">Monthly</option>
+      <option value="none">NO REPEAT</option>
+      <option value="daily">DAILY</option>
+      <option value="weekly">WEEKLY</option>
+      <option value="monthly">MONTHLY</option>
     </select>
-    <input type="color" id="eventColor" value="#4f46e5">
+    <input type="color" id="eventColor" value="#ff4d00">
     <div class="modalActions">
-      <button id="saveEventBtn">💾 Save</button>
-      <button id="cancelBtn">Cancel</button>
-      <button id="deleteEventBtn" style="background:#dc2626; color:white;">🗑 Delete</button>
+      <button id="saveEventBtn">SAVE</button>
+      <button id="cancelBtn">CANCEL</button>
+      <button id="deleteEventBtn">DELETE</button>
     </div>
   </div>
 </div>
 
 <script>
-  // ---------- GzCalendar: Infinite Timeline (BCE to Infinity) ----------
-  let currentDate = new Date(); // real today reference
-  let events = JSON.parse(localStorage.getItem("calendarEvents")) || [];
+/* ============================================================
+   HOROLIX — main
+   ============================================================ */
+(function () {
+  "use strict";
+
+  const calendarGrid = document.getElementById("calendarGrid");
+  const monthYear    = document.getElementById("monthYear");
+  const modal        = document.getElementById("eventModal");
+  const searchInput  = document.getElementById("searchInput");
+  const yearSelector = document.getElementById("yearSelector");
+  const htmlEl       = document.documentElement;
+  const sidebar      = document.getElementById("sidebar");
+  const menuToggle   = document.getElementById("menuToggle");
+  const sideBackdrop = document.getElementById("sideBackdrop");
+
+  let currentDate = new Date();
   let currentView = "month";
-  let editingIndex = null;
-  
-  // Helper: Format year display with BCE/CE notation
-  function formatYearWithEra(year) {
-    if (year < 0) return `${Math.abs(year)} BCE`;
-    if (year === 0) return `1 BCE`; // historical convention: year 0 doesn't exist, but we'll map year 0 to 1 BCE for clarity
-    return `${year} CE`;
+  let events      = [];
+  let editingId   = null;
+
+  /* ---------- STORAGE ---------- */
+  function loadEvents() {
+    try { events = JSON.parse(localStorage.getItem("horolix_events")) || []; }
+    catch { events = []; }
+    if (!Array.isArray(events)) events = [];
   }
-  
-  // Convert JS Date (year, month, day) to a sortable key
-  function getDateKey(year, month, day) {
-    // year can be negative (BCE)
-    return `${year}-${month+1}-${day}`;
+  function persistEvents() {
+    try { localStorage.setItem("horolix_events", JSON.stringify(events)); } catch (_) {}
   }
-  
-  // Normalize from input date string (YYYY-MM-DD) to internal format handling negative years
-  function normalizeDate(dateVal) {
-    if (!dateVal) return null;
-    let d = new Date(dateVal);
-    if (isNaN(d.getTime())) return null;
-    return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
-  }
-  
-  function convertDate(str) {
-    let parts = str.split("-");
-    if (parts.length === 3) {
-      let y = parseInt(parts[0]);
-      let m = String(parseInt(parts[1])).padStart(2,'0');
-      let d = String(parseInt(parts[2])).padStart(2,'0');
-      return `${y}-${m}-${d}`;
-    }
-    return str;
-  }
-  
-  function saveEvents() { localStorage.setItem("calendarEvents", JSON.stringify(events)); renderCurrentView(); }
-  
-  // Get today's key using currentDate (real today)
-  function getTodayKey() {
-    const today = new Date();
-    return `${today.getFullYear()}-${today.getMonth()+1}-${today.getDate()}`;
-  }
-  
-  // expand recurring events (supports BCE/CE via string dates)
-  function expandRecurringEvents(baseEvents) {
-    let expanded = [];
-    const maxFuture = new Date();
-    maxFuture.setFullYear(maxFuture.getFullYear() + 5);
-    baseEvents.forEach(ev => {
-      expanded.push({ ...ev });
-      if (ev.recurring && ev.recurring !== "none") {
-        let dateParts = ev.date.split('-');
-        let year = parseInt(dateParts[0]);
-        let month = parseInt(dateParts[1]) - 1;
-        let day = parseInt(dateParts[2]);
-        let startDate = new Date(year, month, day);
-        if (isNaN(startDate.getTime())) return;
-        let endDate = new Date(maxFuture);
-        let current = new Date(startDate);
-        if (ev.recurring === "daily") current.setDate(current.getDate() + 1);
-        else if (ev.recurring === "weekly") current.setDate(current.getDate() + 7);
-        else if (ev.recurring === "monthly") current.setMonth(current.getMonth() + 1);
-        while (current <= endDate) {
-          let newDate = `${current.getFullYear()}-${current.getMonth()+1}-${current.getDate()}`;
-          expanded.push({ ...ev, id: ev.id + "_" + newDate, date: newDate, recurringParent: ev.id });
-          if (ev.recurring === "daily") current.setDate(current.getDate() + 1);
-          else if (ev.recurring === "weekly") current.setDate(current.getDate() + 7);
-          else if (ev.recurring === "monthly") current.setMonth(current.getMonth() + 1);
-        }
-      }
-    });
-    return expanded;
-  }
-  
-  function getFilteredEvents() {
-    let expanded = expandRecurringEvents(events);
-    const search = searchInput.value.toLowerCase();
-    const category = categoryFilter.value;
-    return expanded.filter(ev => {
-      if (search && !ev.title.toLowerCase().includes(search)) return false;
-      if (category !== "all" && ev.category !== category) return false;
-      return true;
-    });
-  }
-  
-  function renderCurrentView() {
-    if (currentView === "month") renderMonthView();
-    else if (currentView === "week") renderWeekView();
-    else if (currentView === "day") renderDayView();
-    else if (currentView === "agenda") renderAgendaView();
-  }
-  
-  // Build month view with BCE support: manually construct calendar grid using absolute year/month
-  function renderMonthView() {
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth();
-    // Get first day of month (0=Sun)
-    const firstDay = new Date(year, month, 1).getDay();
-    const lastDate = new Date(year, month + 1, 0).getDate();
-    
-    let monthName = currentDate.toLocaleString("default", { month: "long" });
-    let yearLabel = formatYearWithEra(year);
-    monthYear.textContent = `${monthName} ${yearLabel}`;
-    
-    calendarGrid.innerHTML = "";
-    calendarGrid.style.gridTemplateColumns = "repeat(7, 1fr)";
-    
-    for (let i = 0; i < firstDay; i++) {
-      let blank = document.createElement("div"); blank.className = "dayCell"; 
-      calendarGrid.appendChild(blank);
-    }
-    
-    const filtered = getFilteredEvents();
-    const todayKey = getTodayKey();
-    
-    for (let day = 1; day <= lastDate; day++) {
-      const cell = document.createElement("div");
-      cell.className = "dayCell";
-      const dateKey = `${year}-${month+1}-${day}`;
-      cell.dataset.date = dateKey;
-      
-      if (dateKey === todayKey) cell.classList.add("today-highlight");
-      
-      const dayNum = document.createElement("div");
-      dayNum.className = "dayNumber";
-      dayNum.textContent = day;
-      
-      if (dateKey === todayKey) {
-        const iconSpan = document.createElement("span");
-        iconSpan.className = "today-icon";
-        iconSpan.textContent = "Today";
-        dayNum.appendChild(iconSpan);
-      }
-      cell.appendChild(dayNum);
-      
-      const dayEvents = filtered.filter(ev => ev.date === dateKey);
-      dayEvents.forEach(ev => {
-        const chip = document.createElement("div");
-        chip.className = "eventChip";
-        chip.style.background = ev.color;
-        chip.textContent = ev.title + (ev.recurring && ev.recurring !== "none" ? " 🔁" : "");
-        chip.draggable = true;
-        chip.addEventListener("dragstart", (e) => { e.dataTransfer.setData("text/plain", ev.title + "||" + ev.date); });
-        cell.appendChild(chip);
-      });
-      
-      // Holidays only for positive years (cosmetic)
-      if (year > 0) {
-        const holidays = { "1-1":"🎆 New Year", "12-25":"🎄 Christmas", "7-4":"🇺🇸 Independence", "10-31":"🎃 Halloween", "1-26":"🇮🇳 Republic Day", "8-15":"🇮🇳 Independence Day" };
-        const key = `${month+1}-${day}`;
-        if (holidays[key]) {
-          let hdiv = document.createElement("div"); hdiv.className = "eventChip"; hdiv.style.background = "#b91c1c"; hdiv.textContent = holidays[key]; cell.appendChild(hdiv);
-        }
-      }
-      calendarGrid.appendChild(cell);
-    }
-  }
-  
-  function renderWeekView() {
-    const startOfWeek = new Date(currentDate);
-    startOfWeek.setDate(currentDate.getDate() - currentDate.getDay());
-    let yearLabel = formatYearWithEra(currentDate.getFullYear());
-    monthYear.textContent = `Week of ${startOfWeek.toDateString()} (${yearLabel})`;
-    calendarGrid.innerHTML = "";
-    calendarGrid.style.gridTemplateColumns = "repeat(7, 1fr)";
-    const filtered = getFilteredEvents();
-    const todayKey = getTodayKey();
-    
-    for (let i = 0; i < 7; i++) {
-      let day = new Date(startOfWeek); day.setDate(startOfWeek.getDate() + i);
-      let dateStr = `${day.getFullYear()}-${day.getMonth()+1}-${day.getDate()}`;
-      let cell = document.createElement("div"); cell.className = "dayCell"; cell.dataset.date = dateStr;
-      if (dateStr === todayKey) cell.classList.add("today-highlight");
-      let header = document.createElement("div"); header.className = "dayNumber"; 
-      header.textContent = day.toLocaleDateString("en-US", { weekday: 'short', month: 'numeric', day: 'numeric' });
-      if (dateStr === todayKey) {
-        let iconSpan = document.createElement("span"); iconSpan.className = "today-icon"; iconSpan.textContent = "Today";
-        header.appendChild(iconSpan);
-      }
-      cell.appendChild(header);
-      let dayEvents = filtered.filter(ev => ev.date === dateStr);
-      dayEvents.forEach(ev => { let chip = document.createElement("div"); chip.className = "eventChip"; chip.style.background = ev.color; chip.textContent = ev.title; cell.appendChild(chip); });
-      calendarGrid.appendChild(cell);
-    }
-  }
-  
-  function renderDayView() {
-    let dateStr = `${currentDate.getFullYear()}-${currentDate.getMonth()+1}-${currentDate.getDate()}`;
-    let yearLabel = formatYearWithEra(currentDate.getFullYear());
-    monthYear.textContent = `${currentDate.toDateString()} (${yearLabel})`;
-    calendarGrid.innerHTML = "";
-    calendarGrid.style.gridTemplateColumns = "1fr";
-    let cell = document.createElement("div"); cell.className = "dayCell"; cell.style.minHeight = "500px";
-    if (dateStr === getTodayKey()) cell.classList.add("today-highlight");
-    let titleDiv = document.createElement("h3"); 
-    titleDiv.textContent = `📅 ${currentDate.toDateString()}`;
-    if (dateStr === getTodayKey()) {
-      let todayBadge = document.createElement("span"); todayBadge.className = "today-icon"; todayBadge.textContent = " Today";
-      titleDiv.appendChild(todayBadge);
-    }
-    cell.appendChild(titleDiv);
-    const filtered = getFilteredEvents().filter(ev => ev.date === dateStr);
-    filtered.forEach(ev => { let chip = document.createElement("div"); chip.className = "eventChip"; chip.style.background = ev.color; chip.textContent = `${ev.time || "all day"} • ${ev.title}`; cell.appendChild(chip); });
-    calendarGrid.appendChild(cell);
-  }
-  
-  function renderAgendaView() {
-    const filtered = getFilteredEvents();
-    const sorted = [...filtered].sort((a,b) => {
-      let [y1,m1,d1] = a.date.split('-').map(Number);
-      let [y2,m2,d2] = b.date.split('-').map(Number);
-      if (y1 !== y2) return y1 - y2;
-      if (m1 !== m2) return m1 - m2;
-      return d1 - d2;
-    });
-    monthYear.textContent = "📋 Infinite Agenda (BCE → ∞)";
-    calendarGrid.innerHTML = "";
-    calendarGrid.style.gridTemplateColumns = "1fr";
-    let container = document.createElement("div"); container.style.padding = "1rem";
-    if (sorted.length === 0) container.innerHTML = "<p>✨ No events across timeline.</p>";
-    const todayKey = getTodayKey();
-    sorted.forEach(ev => {
-      let card = document.createElement("div"); card.style.background = "#f1f5f9"; card.style.margin = "8px 0"; card.style.padding = "12px"; card.style.borderRadius = "20px";
-      if (document.body.classList.contains("dark")) card.style.background = "#334155";
-      let yearNum = parseInt(ev.date.split('-')[0]);
-      let eraLabel = yearNum < 0 ? `${Math.abs(yearNum)} BCE` : yearNum === 0 ? `1 BCE` : `${yearNum} CE`;
-      let todayMark = ev.date === todayKey ? ' <span class="today-icon" style="display:inline-block; font-size:10px;">📍 Today</span>' : '';
-      card.innerHTML = `<strong style="color:${ev.color}">${ev.title}</strong>${todayMark}<br/>📅 ${ev.date} (${eraLabel}) ${ev.time ? `⏰ ${ev.time}` : ""}<br/>📌 ${ev.category} ${ev.recurring && ev.recurring !== "none" ? `🔄 ${ev.recurring}` : ""}`;
-      container.appendChild(card);
-    });
-    calendarGrid.appendChild(container);
-  }
-  
-  // Infinite Year Selector: BCE to Infinity (dynamic generation)
-  function populateYearSelector(selectedYear) {
-    yearSelector.innerHTML = "";
-    // Show from 5000 BCE to 5000 CE for practical UI, but user can type beyond via +/- jumps
-    let startYear = -5000;
-    let endYear = 5000;
-    for (let y = startYear; y <= endYear; y++) {
-      let option = document.createElement("option");
-      option.value = y;
-      let displayYear = y < 0 ? `${Math.abs(y)} BCE` : y === 0 ? `1 BCE` : `${y} CE`;
-      option.textContent = displayYear;
-      if (y === selectedYear) option.selected = true;
-      yearSelector.appendChild(option);
-    }
-    // If selectedYear beyond range, add a temporary option
-    if (selectedYear < startYear || selectedYear > endYear) {
-      let extra = document.createElement("option");
-      extra.value = selectedYear;
-      let displayExtra = selectedYear < 0 ? `${Math.abs(selectedYear)} BCE` : `${selectedYear} CE`;
-      extra.textContent = displayExtra + " (custom)";
-      extra.selected = true;
-      yearSelector.appendChild(extra);
-    }
-  }
-  
-  function setCurrentYear(yearVal) {
-    let newDate = new Date(currentDate);
-    newDate.setFullYear(yearVal);
-    currentDate = newDate;
-    populateYearSelector(yearVal);
+  function saveEvents() {
+    persistEvents();
     renderCurrentView();
   }
-  
-  // Modal & event handlers
-  function openModal(editEvent = null, dateForNew = null) {
-    if (editEvent) {
-      eventTitle.value = editEvent.title;
-      eventDescription.value = editEvent.description || "";
-      eventDate.value = convertDate(editEvent.date);
-      eventTime.value = editEvent.time || "";
-      eventCategory.value = editEvent.category || "other";
-      eventColor.value = editEvent.color;
-      recurringSelect.value = editEvent.recurring || "none";
-      editingIndex = events.findIndex(e => e.id === editEvent.id && !e.recurringParent);
-      document.getElementById("modalTitle").innerText = "✏️ Edit Event";
+
+  /* ---------- DATE HELPERS ---------- */
+  const pad = n => String(n).padStart(2, "0");
+  const dateKeyFromParts = (y, m, d) => `${y}-${pad(m)}-${pad(d)}`;
+  const dateKeyFromDate  = dt => dateKeyFromParts(dt.getFullYear(), dt.getMonth() + 1, dt.getDate());
+
+  function todayIST() {
+    return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+  }
+  const todayKey = todayIST;
+
+  function formatYearWithEra(year) {
+    if (year < 0)  return `${Math.abs(year)} BCE`;
+    if (year === 0) return `1 BCE`;
+    return `${year} CE`;
+  }
+  function parseDateKey(key) {
+    const [y, m, d] = key.split("-").map(Number);
+    return { y, m, d };
+  }
+
+  /* ---------- YEAR SELECTOR ---------- */
+  function populateYearSelector(centerYear) {
+    const RANGE = 250;
+    const frag = document.createDocumentFragment();
+    yearSelector.innerHTML = "";
+    for (let y = centerYear - RANGE; y <= centerYear + RANGE; y++) {
+      const opt = document.createElement("option");
+      opt.value = y;
+      opt.textContent = y < 0 ? `${Math.abs(y)} BCE` : (y === 0 ? "1 BCE" : `${y} CE`);
+      if (y === centerYear) opt.selected = true;
+      frag.appendChild(opt);
+    }
+    yearSelector.appendChild(frag);
+  }
+  function setCurrentYear(y) {
+    const nd = new Date(currentDate);
+    nd.setFullYear(y);
+    currentDate = nd;
+    populateYearSelector(y);
+    renderCurrentView();
+  }
+
+  /* ---------- RECURRENCE ---------- */
+  function expandRecurring(baseEvents) {
+    const out = [];
+    const horizon = new Date();
+    horizon.setFullYear(horizon.getFullYear() + 3);
+    baseEvents.forEach(ev => {
+      if (!ev || !ev.date) return;
+      out.push({ ...ev });
+      if (!ev.recurring || ev.recurring === "none") return;
+      const { y, m, d } = parseDateKey(ev.date);
+      let cur = new Date(y, m - 1, d);
+      if (isNaN(cur.getTime())) return;
+      const step = dt => {
+        if (ev.recurring === "daily")   dt.setDate(dt.getDate() + 1);
+        if (ev.recurring === "weekly")  dt.setDate(dt.getDate() + 7);
+        if (ev.recurring === "monthly") dt.setMonth(dt.getMonth() + 1);
+      };
+      step(cur);
+      let safety = 0;
+      while (cur <= horizon && safety++ < 2000) {
+        out.push({
+          ...ev,
+          id: ev.id + "__" + dateKeyFromDate(cur),
+          date: dateKeyFromDate(cur),
+          recurringParent: ev.id
+        });
+        step(cur);
+      }
+    });
+    return out;
+  }
+
+  function getFilteredEvents() {
+    const expanded = expandRecurring(events);
+    const q = searchInput.value.trim().toLowerCase();
+    if (!q) return expanded;
+    return expanded.filter(ev => (ev.title || "").toLowerCase().includes(q));
+  }
+
+  /* ---------- UTIL ---------- */
+  function pickTextColor(hex) {
+    if (!hex || hex[0] !== "#" || hex.length < 7) return "#fff";
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return (0.299 * r + 0.587 * g + 0.114 * b) > 160 ? "#111" : "#fff";
+  }
+  const escapeHtml = s => String(s).replace(/[&<>"']/g, c => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  })[c]);
+
+  /* ---------- ROUTER ---------- */
+  function renderCurrentView() {
+    if (currentView === "month")  return renderMonthView();
+    if (currentView === "week")   return renderWeekView();
+    if (currentView === "day")    return renderDayView();
+    if (currentView === "agenda") return renderAgendaView();
+  }
+
+  /* ---------- MONTH ---------- */
+  function renderMonthView() {
+    const y = currentDate.getFullYear();
+    const m = currentDate.getMonth();
+    const firstDow = new Date(y, m, 1).getDay();
+    const lastDay  = new Date(y, m + 1, 0).getDate();
+
+    monthYear.textContent =
+      `${currentDate.toLocaleString("default", { month: "long" }).toUpperCase()} ${formatYearWithEra(y).toUpperCase()}`;
+
+    calendarGrid.innerHTML = "";
+    calendarGrid.style.gridTemplateColumns = "repeat(7, 1fr)";
+
+    for (let i = 0; i < firstDow; i++) {
+      const blank = document.createElement("div");
+      blank.className = "dayCell";
+      blank.style.opacity = "0.25";
+      blank.style.cursor = "default";
+      calendarGrid.appendChild(blank);
+    }
+
+    const filtered = getFilteredEvents();
+    const tk = todayKey();
+
+    for (let day = 1; day <= lastDay; day++) {
+      const cell = document.createElement("div");
+      cell.className = "dayCell";
+      const key = dateKeyFromParts(y, m + 1, day);
+      cell.dataset.date = key;
+      if (key === tk) cell.classList.add("today-highlight");
+
+      const num = document.createElement("div");
+      num.className = "dayNumber";
+      num.textContent = pad(day);
+      if (key === tk) {
+        const b = document.createElement("span");
+        b.className = "today-icon";
+        b.textContent = "TODAY";
+        num.appendChild(b);
+      }
+      cell.appendChild(num);
+
+      filtered.filter(ev => ev.date === key).forEach(ev => {
+        const chip = document.createElement("div");
+        chip.className = "eventChip";
+        chip.style.background = ev.color || "#1a1a1a";
+        chip.style.color = pickTextColor(ev.color || "#1a1a1a");
+        chip.textContent = ev.title + (ev.recurring && ev.recurring !== "none" ? " ↻" : "");
+        chip.draggable = true;
+        chip.dataset.eventId = ev.recurringParent || ev.id;
+        chip.addEventListener("dragstart", e => {
+          e.stopPropagation();
+          e.dataTransfer.setData("text/plain", String(ev.recurringParent || ev.id));
+        });
+        cell.appendChild(chip);
+      });
+
+      calendarGrid.appendChild(cell);
+    }
+  }
+
+  /* ---------- WEEK ---------- */
+  function renderWeekView() {
+    const start = new Date(currentDate);
+    start.setDate(currentDate.getDate() - currentDate.getDay());
+
+    monthYear.textContent =
+      `WEEK OF ${start.toDateString().toUpperCase()} · ${formatYearWithEra(currentDate.getFullYear()).toUpperCase()}`;
+
+    calendarGrid.innerHTML = "";
+    calendarGrid.style.gridTemplateColumns = "repeat(7, 1fr)";
+
+    const filtered = getFilteredEvents();
+    const tk = todayKey();
+
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(start);
+      d.setDate(start.getDate() + i);
+      const key = dateKeyFromDate(d);
+      const cell = document.createElement("div");
+      cell.className = "dayCell";
+      cell.dataset.date = key;
+      if (key === tk) cell.classList.add("today-highlight");
+
+      const head = document.createElement("div");
+      head.className = "dayNumber";
+      head.textContent = d.toLocaleDateString("en-US", {
+        weekday: "short", month: "numeric", day: "numeric"
+      }).toUpperCase();
+      if (key === tk) {
+        const b = document.createElement("span");
+        b.className = "today-icon"; b.textContent = "TODAY";
+        head.appendChild(b);
+      }
+      cell.appendChild(head);
+
+      filtered.filter(ev => ev.date === key).forEach(ev => {
+        const chip = document.createElement("div");
+        chip.className = "eventChip";
+        chip.style.background = ev.color || "#1a1a1a";
+        chip.style.color = pickTextColor(ev.color || "#1a1a1a");
+        chip.textContent = ev.title;
+        cell.appendChild(chip);
+      });
+
+      calendarGrid.appendChild(cell);
+    }
+  }
+
+  /* ---------- DAY ---------- */
+  function renderDayView() {
+    const key = dateKeyFromDate(currentDate);
+    monthYear.textContent =
+      `${currentDate.toDateString().toUpperCase()} · ${formatYearWithEra(currentDate.getFullYear()).toUpperCase()}`;
+
+    calendarGrid.innerHTML = "";
+    calendarGrid.style.gridTemplateColumns = "1fr";
+
+    const cell = document.createElement("div");
+    cell.className = "dayCell";
+    cell.style.minHeight = "500px";
+    cell.style.cursor = "default";
+    if (key === todayKey()) cell.classList.add("today-highlight");
+
+    const h = document.createElement("h3");
+    h.style.cssText = "font-family:'VT323',monospace;font-size:2rem;font-weight:400;text-transform:uppercase;margin-bottom:16px;border-bottom:2px dashed var(--mute);padding-bottom:8px;";
+    h.textContent = `▸ ${currentDate.toDateString()}`;
+    if (key === todayKey()) {
+      const b = document.createElement("span");
+      b.className = "today-icon"; b.textContent = " TODAY";
+      h.appendChild(b);
+    }
+    cell.appendChild(h);
+
+    getFilteredEvents().filter(ev => ev.date === key).forEach(ev => {
+      const chip = document.createElement("div");
+      chip.className = "eventChip";
+      chip.style.cssText = `background:${ev.color || "#1a1a1a"};color:${pickTextColor(ev.color || "#1a1a1a")};padding:14px;font-size:0.85rem;margin-bottom:8px;`;
+      chip.textContent = ev.title;
+      if (ev.description) {
+        const desc = document.createElement("div");
+        desc.style.cssText = "margin-top:6px;font-weight:500;font-size:0.7rem;opacity:0.9;text-transform:none;letter-spacing:0;";
+        desc.textContent = ev.description;
+        chip.appendChild(desc);
+      }
+      cell.appendChild(chip);
+    });
+
+    calendarGrid.appendChild(cell);
+  }
+
+  /* ---------- AGENDA ---------- */
+  function renderAgendaView() {
+    const sorted = [...getFilteredEvents()].sort((a, b) => {
+      const A = a.date.split("-").map(Number);
+      const B = b.date.split("-").map(Number);
+      if (A[0] !== B[0]) return A[0] - B[0];
+      if (A[1] !== B[1]) return A[1] - B[1];
+      return A[2] - B[2];
+    });
+
+    monthYear.textContent = "INFINITE AGENDA · BCE → ∞";
+    calendarGrid.innerHTML = "";
+    calendarGrid.style.gridTemplateColumns = "1fr";
+
+    const wrap = document.createElement("div");
+    wrap.style.padding = "1.25rem";
+    if (!sorted.length) {
+      wrap.innerHTML = "<p style='text-transform:uppercase;font-weight:700;padding:1rem;border:2px dashed var(--mute);'>// NO EVENTS ACROSS TIMELINE.</p>";
+    }
+
+    const tk = todayKey();
+    sorted.forEach((ev, i) => {
+      const card = document.createElement("div");
+      card.style.cssText = "background:var(--paper);border:2px solid var(--ink);margin:10px 0;padding:14px 16px;display:flex;gap:14px;align-items:flex-start;box-shadow:4px 4px 0 var(--ink);";
+
+      const y = parseInt(ev.date.split("-")[0], 10);
+      const era = y < 0 ? `${Math.abs(y)} BCE` : (y === 0 ? "1 BCE" : `${y} CE`);
+      const isToday = ev.date === tk;
+
+      card.innerHTML = `
+        <div style="font-family:'VT323',monospace;font-size:1.6rem;line-height:1;color:var(--accent);min-width:44px;text-align:right;">
+          ${pad(i + 1)}
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:800;font-size:0.95rem;text-transform:uppercase;letter-spacing:0.03em;color:var(--ink);word-break:break-word;">
+            ${escapeHtml(ev.title)}${isToday ? ' <span class="today-icon" style="font-size:9px;padding:1px 5px;">TODAY</span>' : ''}
+          </div>
+          <div style="margin-top:6px;font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--mute);word-break:break-word;">
+            📅 ${ev.date} · ${era}${ev.recurring && ev.recurring !== "none" ? " · ↻ " + ev.recurring.toUpperCase() : ""}
+          </div>
+        </div>
+        <div style="width:8px;min-height:44px;background:${ev.color};border:1px solid var(--ink);flex-shrink:0;"></div>
+      `;
+      wrap.appendChild(card);
+    });
+
+    calendarGrid.appendChild(wrap);
+  }
+
+  /* ---------- MODAL ---------- */
+  function openModal(editEv = null, prefDate = null) {
+    const titleEl = document.getElementById("modalTitle");
+    const titleInput = document.getElementById("eventTitle");
+    const descInput = document.getElementById("eventDescription");
+    const dateInput = document.getElementById("eventDate");
+    const recSel = document.getElementById("recurringSelect");
+    const colorInput = document.getElementById("eventColor");
+
+    if (editEv) {
+      editingId = editEv.id;
+      titleEl.textContent = "EDIT EVENT";
+      titleInput.value = editEv.title || "";
+      descInput.value = editEv.description || "";
+      dateInput.value = editEv.date || "";
+      recSel.value = editEv.recurring || "none";
+      colorInput.value = editEv.color || "#ff4d00";
     } else {
-      eventTitle.value = "";
-      eventDescription.value = "";
-      if (dateForNew) eventDate.value = dateForNew;
-      else eventDate.value = "";
-      eventTime.value = "";
-      eventCategory.value = "other";
-      eventColor.value = "#4f46e5";
-      recurringSelect.value = "none";
-      editingIndex = null;
-      document.getElementById("modalTitle").innerText = "➕ Create Event";
+      editingId = null;
+      titleEl.textContent = "NEW EVENT";
+      titleInput.value = "";
+      descInput.value = "";
+      dateInput.value = prefDate || dateKeyFromDate(currentDate);
+      recSel.value = "none";
+      colorInput.value = "#ff4d00";
     }
     modal.classList.remove("hidden");
+    setTimeout(() => titleInput.focus(), 40);
   }
-  
-  function saveEventFromModal() {
-    if (!eventTitle.value.trim()) { alert("Title required"); return; }
-    const newEvent = {
-      id: editingIndex !== null ? events[editingIndex].id : Date.now() + "_" + Math.random(),
-      title: eventTitle.value,
-      description: eventDescription.value,
-      date: normalizeDate(eventDate.value),
-      time: eventTime.value,
-      category: eventCategory.value,
-      color: eventColor.value,
-      recurring: recurringSelect.value,
+
+  function saveFromModal() {
+    const title = document.getElementById("eventTitle").value.trim();
+    if (!title) { alert("TITLE REQUIRED"); return; }
+    const dateVal = document.getElementById("eventDate").value;
+    if (!dateVal) { alert("DATE REQUIRED"); return; }
+
+    const payload = {
+      title,
+      description: document.getElementById("eventDescription").value,
+      date: dateVal,
+      recurring: document.getElementById("recurringSelect").value,
+      color: document.getElementById("eventColor").value
     };
-    if (editingIndex !== null) {
-      events[editingIndex] = { ...events[editingIndex], ...newEvent };
+
+    if (editingId) {
+      const idx = events.findIndex(e => e.id === editingId);
+      if (idx >= 0) events[idx] = { ...events[idx], ...payload };
     } else {
-      events.push(newEvent);
+      events.push({
+        id: "ev_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7),
+        ...payload
+      });
     }
     saveEvents();
     modal.classList.add("hidden");
   }
-  
-  function deleteCurrentEvent() {
-    if (editingIndex !== null && confirm("Delete this event?")) {
-      events.splice(editingIndex, 1);
-      saveEvents();
-      modal.classList.add("hidden");
-    }
+
+  function deleteFromModal() {
+    if (!editingId) return;
+    if (!confirm("DELETE THIS EVENT?")) return;
+    events = events.filter(e => e.id !== editingId);
+    saveEvents();
+    modal.classList.add("hidden");
   }
-  
-  // DOM elements
-  const calendarGridEl = document.getElementById("calendarGrid");
-  const monthYearEl = document.getElementById("monthYear");
-  const modalEl = document.getElementById("eventModal");
-  const searchInput = document.getElementById("searchInput");
-  const categoryFilter = document.getElementById("categoryFilter");
-  const yearSelector = document.getElementById("yearSelector");
-  
-  // Navigation & infinite year
-  document.getElementById("prevBtn").onclick = () => { 
-    if(currentView==="month") currentDate.setMonth(currentDate.getMonth()-1); 
-    else if(currentView==="week") currentDate.setDate(currentDate.getDate()-7); 
-    else currentDate.setDate(currentDate.getDate()-1);
+
+  /* ---------- WIRING ---------- */
+  document.getElementById("newEventBtn").onclick = () => openModal(null, dateKeyFromDate(currentDate));
+  document.getElementById("saveEventBtn").onclick = saveFromModal;
+  document.getElementById("cancelBtn").onclick = () => modal.classList.add("hidden");
+  document.getElementById("deleteEventBtn").onclick = deleteFromModal;
+
+  document.getElementById("prevBtn").onclick = () => {
+    if (currentView === "month")     currentDate.setMonth(currentDate.getMonth() - 1);
+    else if (currentView === "week") currentDate.setDate(currentDate.getDate() - 7);
+    else                             currentDate.setDate(currentDate.getDate() - 1);
     populateYearSelector(currentDate.getFullYear());
-    renderCurrentView(); 
+    renderCurrentView();
   };
-  document.getElementById("nextBtn").onclick = () => { 
-    if(currentView==="month") currentDate.setMonth(currentDate.getMonth()+1); 
-    else if(currentView==="week") currentDate.setDate(currentDate.getDate()+7); 
-    else currentDate.setDate(currentDate.getDate()+1);
+  document.getElementById("nextBtn").onclick = () => {
+    if (currentView === "month")     currentDate.setMonth(currentDate.getMonth() + 1);
+    else if (currentView === "week") currentDate.setDate(currentDate.getDate() + 7);
+    else                             currentDate.setDate(currentDate.getDate() + 1);
     populateYearSelector(currentDate.getFullYear());
-    renderCurrentView(); 
+    renderCurrentView();
   };
-  document.getElementById("todayBtn").onclick = () => { currentDate = new Date(); populateYearSelector(currentDate.getFullYear()); renderCurrentView(); };
-  
+  document.getElementById("todayBtn").onclick = () => {
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Kolkata",
+      year: "numeric", month: "2-digit", day: "2-digit"
+    }).format(new Date()).split("-").map(Number);
+    currentDate = new Date(parts[0], parts[1] - 1, parts[2]);
+    populateYearSelector(currentDate.getFullYear());
+    renderCurrentView();
+  };
+
   document.getElementById("yearMinusBtn").onclick = () => setCurrentYear(currentDate.getFullYear() - 100);
-  document.getElementById("yearPlusBtn").onclick = () => setCurrentYear(currentDate.getFullYear() + 100);
+  document.getElementById("yearPlusBtn").onclick  = () => setCurrentYear(currentDate.getFullYear() + 100);
   document.getElementById("decadeMinusBtn").onclick = () => setCurrentYear(currentDate.getFullYear() - 10);
-  document.getElementById("decadePlusBtn").onclick = () => setCurrentYear(currentDate.getFullYear() + 10);
-  
-  yearSelector.onchange = () => { setCurrentYear(parseInt(yearSelector.value)); };
-  
+  document.getElementById("decadePlusBtn").onclick  = () => setCurrentYear(currentDate.getFullYear() + 10);
+
+  yearSelector.onchange = () => setCurrentYear(parseInt(yearSelector.value, 10));
+
   document.querySelectorAll(".viewBtn").forEach(btn => {
     btn.addEventListener("click", () => {
       document.querySelectorAll(".viewBtn").forEach(b => b.classList.remove("active"));
@@ -806,66 +1230,176 @@
       renderCurrentView();
     });
   });
-  
-  document.addEventListener("click", (e) => {
-    const dayCell = e.target.closest(".dayCell");
-    if (dayCell && dayCell.dataset.date && !e.target.closest(".eventChip")) {
-      openModal(null, dayCell.dataset.date);
+
+  calendarGrid.addEventListener("click", e => {
+    const chip = e.target.closest(".eventChip");
+    if (chip) {
+      const id = chip.dataset.eventId;
+      const ev = events.find(x => x.id === id);
+      if (ev) openModal(ev);
+      return;
     }
-    if (e.target.classList.contains("eventChip")) {
-      const titleFull = e.target.textContent.replace(" 🔁", "");
-      const found = events.find(ev => ev.title === titleFull);
-      if (found) openModal(found);
-      e.stopPropagation();
-    }
+    const cell = e.target.closest(".dayCell");
+    if (cell && cell.dataset.date) openModal(null, cell.dataset.date);
   });
-  
-  document.addEventListener("dragover", (e) => { if (e.target.closest(".dayCell")) e.preventDefault(); });
-  document.addEventListener("drop", (e) => {
-    const targetCell = e.target.closest(".dayCell");
-    if (!targetCell || !targetCell.dataset.date) return;
-    const dragData = e.dataTransfer.getData("text/plain");
-    if (!dragData) return;
-    const [evTitle] = dragData.split("||");
-    const eventObj = events.find(ev => ev.title === evTitle);
-    if (eventObj) { eventObj.date = targetCell.dataset.date; saveEvents(); }
+
+  calendarGrid.addEventListener("dragover", e => {
+    if (e.target.closest(".dayCell")) e.preventDefault();
   });
-  
-  document.getElementById("exportBtn").onclick = () => { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(events, null,2)], {type:"application/json"})); a.download = "gcalendar_backup.json"; a.click(); };
-  document.getElementById("importBtn").onclick = () => document.getElementById("importFile").click();
-  document.getElementById("importFile").onchange = (e) => { const file = e.target.files[0]; if(file) { const reader = new FileReader(); reader.onload = (ev) => { try { events = JSON.parse(ev.target.result); saveEvents(); alert("Imported!"); } catch(e) { alert("Invalid file"); } }; reader.readAsText(file); } };
-  
-  const themeBtn = document.getElementById("themeBtn");
-  if(localStorage.getItem("theme") === "dark") document.body.classList.add("dark");
-  themeBtn.onclick = () => { document.body.classList.toggle("dark"); localStorage.setItem("theme", document.body.classList.contains("dark") ? "dark" : "light"); themeBtn.innerHTML = document.body.classList.contains("dark") ? "☀️ Light Mode" : "🌙 Dark Mode"; };
-  themeBtn.innerHTML = document.body.classList.contains("dark") ? "☀️ Light Mode" : "🌙 Dark Mode";
-  
-  function updateClock() { let now = new Date(); document.getElementById("liveClock").innerText = now.toLocaleTimeString(); document.getElementById("liveDate").innerText = now.toDateString(); }
-  updateClock(); setInterval(updateClock, 1000);
-  
-  if ("Notification" in window) Notification.requestPermission();
-  setInterval(() => {
-    const now = new Date();
-    const expanded = expandRecurringEvents(events);
-    expanded.forEach(ev => {
-      if (ev.time) {
-        let eventDateTime = new Date(`${ev.date}T${ev.time}`);
-        let diff = eventDateTime - now;
-        if (diff > 0 && diff < 60000 && Notification.permission === "granted") new Notification("🔔 Reminder", { body: ev.title });
-      }
-    });
-  }, 30000);
-  
-  document.getElementById("saveEventBtn").onclick = saveEventFromModal;
-  document.getElementById("cancelBtn").onclick = () => modalEl.classList.add("hidden");
-  document.getElementById("deleteEventBtn").onclick = deleteCurrentEvent;
+  calendarGrid.addEventListener("drop", e => {
+    const cell = e.target.closest(".dayCell");
+    if (!cell || !cell.dataset.date) return;
+    e.preventDefault();
+    const id = e.dataTransfer.getData("text/plain");
+    if (!id) return;
+    const ev = events.find(x => x.id === id);
+    if (ev) { ev.date = cell.dataset.date; saveEvents(); }
+  });
+
   searchInput.oninput = () => renderCurrentView();
-  categoryFilter.onchange = () => renderCurrentView();
-  window.onclick = (e) => { if (e.target === modalEl) modalEl.classList.add("hidden"); };
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape") modalEl.classList.add("hidden"); });
-  
+
+  /* ---------- THEME ---------- */
+  const themeBtn = document.getElementById("themeBtn");
+  function applyTheme(theme) {
+    htmlEl.setAttribute("data-theme", theme);
+    themeBtn.textContent = theme === "dark" ? "◑ LIGHT MODE" : "◐ DARK MODE";
+  }
+  themeBtn.addEventListener("click", () => {
+    const cur = htmlEl.getAttribute("data-theme") === "dark" ? "dark" : "light";
+    const next = cur === "dark" ? "light" : "dark";
+    try { localStorage.setItem("horolix_theme", next); } catch (_) {}
+    applyTheme(next);
+  });
+
+  /* ---------- EXPORT ---------- */
+  function exportEvents() {
+    const json = JSON.stringify(events, null, 2);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "horolix_backup_" + todayIST() + ".json";
+    a.rel = "noopener";
+    a.style.display = "none";
+
+    document.body.appendChild(a);
+    a.click();
+
+    setTimeout(() => {
+      try { document.body.removeChild(a); } catch (_) {}
+      URL.revokeObjectURL(url);
+    }, 250);
+  }
+
+  /* ---------- IMPORT ---------- */
+  function importEvents(file) {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (!Array.isArray(data)) { alert("INVALID FILE · EXPECTED ARRAY"); return; }
+        const cleaned = data
+          .filter(x => x && typeof x === "object" && typeof x.date === "string" && typeof x.title === "string")
+          .map(x => ({
+            id: x.id || ("ev_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7)),
+            title: x.title,
+            description: x.description || "",
+            date: x.date,
+            recurring: x.recurring || "none",
+            color: x.color || "#ff4d00"
+          }));
+        events = cleaned;
+        saveEvents();
+        alert("IMPORTED " + cleaned.length + " EVENTS");
+      } catch (err) {
+        alert("INVALID FILE · " + (err.message || "PARSE ERROR"));
+      }
+    };
+    reader.onerror = () => alert("COULD NOT READ FILE");
+    reader.readAsText(file);
+  }
+
+  document.getElementById("exportBtn").onclick = exportEvents;
+  document.getElementById("importBtn").onclick = () => document.getElementById("importFile").click();
+  document.getElementById("importFile").onchange = e => {
+    const file = e.target.files && e.target.files[0];
+    if (file) importEvents(file);
+    e.target.value = "";
+  };
+
+  modal.addEventListener("click", e => { if (e.target === modal) modal.classList.add("hidden"); });
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape") modal.classList.add("hidden");
+  });
+
+  /* ---------- TODAY DATE READOUT (IST) ---------- */
+  const dateBigEl = document.getElementById("todayDateBig");
+  const dateSubEl = document.getElementById("todayDateSub");
+
+  function renderTodayReadout() {
+    const now = new Date();
+    const dayStr = now.toLocaleDateString("en-GB", {
+      timeZone: "Asia/Kolkata",
+      day: "2-digit"
+    });
+    const monthStr = now.toLocaleDateString("en-GB", {
+      timeZone: "Asia/Kolkata",
+      month: "short"
+    }).toUpperCase();
+    const yearStr = now.toLocaleDateString("en-GB", {
+      timeZone: "Asia/Kolkata",
+      year: "numeric"
+    });
+    const weekday = now.toLocaleDateString("en-GB", {
+      timeZone: "Asia/Kolkata",
+      weekday: "long"
+    }).toUpperCase();
+
+    dateBigEl.textContent = `${dayStr} ${monthStr}`;
+    dateSubEl.textContent = `${weekday} · ${yearStr}`;
+  }
+
+  /* ---------- MOBILE DRAWER ---------- */
+  function openSidebar() {
+    sidebar.classList.add("open");
+    sideBackdrop.classList.add("show");
+  }
+  function closeSidebar() {
+    sidebar.classList.remove("open");
+    sideBackdrop.classList.remove("show");
+  }
+  menuToggle.addEventListener("click", () => {
+    sidebar.classList.contains("open") ? closeSidebar() : openSidebar();
+  });
+  sideBackdrop.addEventListener("click", closeSidebar);
+  sidebar.addEventListener("click", e => {
+    if (window.innerWidth <= 820 && e.target.closest("button")) {
+      setTimeout(closeSidebar, 120);
+    }
+  });
+  window.addEventListener("resize", () => {
+    if (window.innerWidth > 820) closeSidebar();
+  });
+
+  /* ---------- BOOT ---------- */
+  loadEvents();
+
+  let savedTheme = "light";
+  try { savedTheme = localStorage.getItem("horolix_theme") || "light"; } catch (_) {}
+  applyTheme(savedTheme);
+
   populateYearSelector(currentDate.getFullYear());
-  renderCurrentView();
+
+  requestAnimationFrame(() => {
+    renderCurrentView();
+    window.addEventListener("resize", () => renderCurrentView());
+  });
+
+  renderTodayReadout();
+  setInterval(renderTodayReadout, 60 * 60 * 1000);
+
+})();
 </script>
 </body>
 </html>
