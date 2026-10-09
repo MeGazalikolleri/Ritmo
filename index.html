@@ -1,1920 +1,1431 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-<meta name="theme-color" content="#ff4b00">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Ritmo">
-<meta name="description" content="Ritmo — rigid retro calendar from BCE to ∞">
-<title>Ritmo · Calendar</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Trenne · Background Remover</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-<script>
-  (function () {
-    try {
-      var saved = localStorage.getItem("ritmo_theme");
-      if (!saved) {
-        saved = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-      }
-      document.documentElement.setAttribute("data-theme", saved);
-    } catch (e) {
-      document.documentElement.setAttribute("data-theme", "light");
-    }
-  })();
-</script>
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=VT323&family=Archivo+Black&display=swap" rel="stylesheet">
-
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23ff4b00'/%3E%3Ctext x='50' y='78' font-family='monospace' font-size='72' font-weight='bold' text-anchor='middle' fill='%23fff'%3ER%3C/text%3E%3C/svg%3E">
-
-<style>
-  /* ============================================================
-     RITMO — dark/light friendly · fluid responsive
-     ============================================================ */
-
-  /* ── LIGHT THEME ─────────────────────────────────────────── */
-  :root,
-  html[data-theme="light"] {
-    --paper:       #f2eee2;
-    --paper-2:     #e8e3d2;
-    --paper-3:     #ded8c4;
-    --surface:     #ffffff;
-    --ink:         #14120d;
-    --ink-soft:    #2a271f;
-    --mute:        #7f7a6a;
-    --line:        #14120d;
-    --line-soft:   #b8b2a0;
-
-    --accent:      #ff4b00;
-    --accent-2:    #ffd100;
-    --accent-3:    #0044ff;
-    --accent-4:    #00a86b;
-
-    --hover:       #e8e3d2;
-    --today-bg:    #ff4b00;
-    --today-fg:    #ffffff;
-    --chip-fg:     #ffffff;
-
-    --grain-a:     rgba(20, 18, 13, 0.03);
-    --grain-b:     rgba(20, 18, 13, 0.02);
-
-    --sb-track:    #f2eee2;
-    --sb-thumb:    #14120d;
-
-    color-scheme: light;
-  }
-
-  /* ── DARK THEME ──────────────────────────────────────────── */
-  html[data-theme="dark"] {
-    --paper:       #131210;
-    --paper-2:     #1c1a16;
-    --paper-3:     #24221c;
-    --surface:     #1c1a16;
-    --ink:         #f4eeda;
-    --ink-soft:    #d8d2bd;
-    --mute:        #807a68;
-    --line:        #f4eeda;
-    --line-soft:   #3a352c;
-
-    --accent:      #ff7a2a;
-    --accent-2:    #ffd838;
-    --accent-3:    #5aa8ff;
-    --accent-4:    #4fd18f;
-
-    --hover:       #201e18;
-    --today-bg:    #ff7a2a;
-    --today-fg:    #131210;
-    --chip-fg:     #ffffff;
-
-    --grain-a:     rgba(244, 238, 218, 0.035);
-    --grain-b:     rgba(244, 238, 218, 0.02);
-
-    --sb-track:    #131210;
-    --sb-thumb:    #f4eeda;
-
-    color-scheme: dark;
-  }
-
-  /* ── FLUID DIMENSION TOKENS ──────────────────────────────── */
-  :root {
-    --fs-base:    clamp(12px, 0.55vw + 10.5px, 15px);
-    --fs-xs:      clamp(9px,  0.35vw + 8px,   11px);
-    --fs-sm:      clamp(10px, 0.4vw  + 9px,   12.5px);
-    --fs-md:      clamp(11px, 0.5vw  + 10px,  13.5px);
-    --fs-lg:      clamp(13px, 0.7vw  + 11px,  17px);
-    --fs-xl:      clamp(16px, 1vw    + 13px,  21px);
-    --fs-2xl:     clamp(20px, 1.5vw  + 15px,  28px);
-    --fs-3xl:     clamp(26px, 2vw    + 18px,  40px);
-
-    --sp-1:       clamp(3px,  0.3vw + 2px,   6px);
-    --sp-2:       clamp(5px,  0.4vw + 3.5px, 9px);
-    --sp-3:       clamp(8px,  0.5vw + 6px,   14px);
-    --sp-4:       clamp(11px, 0.7vw + 8px,   18px);
-    --sp-5:       clamp(15px, 1vw   + 11px,  24px);
-
-    --bw-mid:     clamp(2px, 0.15vw + 1.5px, 3px);
-    --bw-thick:   clamp(2px, 0.2vw + 1.5px, 4px);
-
-    --shadow-hard: clamp(3px, 0.3vw + 2px, 6px) clamp(3px, 0.3vw + 2px, 6px) 0 var(--ink);
-    --shadow-thin: clamp(1px, 0.15vw + 1px, 3px) clamp(1px, 0.15vw + 1px, 3px) 0 var(--ink);
-
-    --sidebar-w:  clamp(240px, 22vw, 340px);
-    --tap:        clamp(38px, 4.5vw, 48px);
-    --cell-min-h: clamp(52px, 9vh, 130px);
-  }
-
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    border-radius: 0 !important;
-    -webkit-font-smoothing: antialiased;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  html, body {
-    height: 100%;
-    width: 100%;
-    overscroll-behavior: none;
-  }
-
-  body {
-    height: 100vh;
-    height: 100dvh;
-    background: var(--paper);
-    color: var(--ink);
-    overflow: hidden;
-    font-family: 'IBM Plex Mono', 'Courier New', monospace;
-    font-size: var(--fs-base);
-    line-height: 1.35;
-    font-weight: 500;
-    letter-spacing: 0.01em;
-    background-image:
-      repeating-linear-gradient(0deg, var(--grain-a) 0 1px, transparent 1px 3px),
-      repeating-linear-gradient(90deg, var(--grain-b) 0 1px, transparent 1px 4px);
-    user-select: none;
-    -webkit-user-select: none;
-    transition: background-color 0.2s ease, color 0.2s ease;
-  }
-
-  /* ============================================================
-     APP SHELL
-     ============================================================ */
-  .app {
-    display: flex;
-    height: 100vh;
-    height: 100dvh;
-    min-height: 0;
-    position: relative;
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
-  }
-
-  /* ============================================================
-     HAMBURGER + BACKDROP
-     ============================================================ */
-  #menuToggle {
-    display: none;
-    position: fixed;
-    top: calc(env(safe-area-inset-top, 0) + var(--sp-2));
-    left: calc(env(safe-area-inset-left, 0) + var(--sp-2));
-    z-index: 300;
-    background: var(--accent);
-    color: #fff;
-    border: var(--bw-mid) solid var(--ink);
-    padding: 0 var(--sp-3);
-    font-family: 'IBM Plex Mono', monospace;
-    font-weight: 700;
-    font-size: var(--fs-lg);
-    letter-spacing: 0.04em;
-    box-shadow: var(--shadow-thin);
-    cursor: pointer;
-    touch-action: manipulation;
-    min-height: var(--tap);
-    min-width: var(--tap);
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.1s, box-shadow 0.1s;
-  }
-  #menuToggle:active {
-    box-shadow: none;
-    transform: translate(2px, 2px);
-  }
-
-  #sideBackdrop {
-    display: none;
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.68);
-    z-index: 199;
-    opacity: 0;
-    transition: opacity 0.2s linear;
-    touch-action: none;
-  }
-  #sideBackdrop.show { display: block; opacity: 1; }
-
-  /* ============================================================
-     SIDEBAR
-     ============================================================ */
-  .sidebar {
-    width: var(--sidebar-w);
-    flex-shrink: 0;
-    background: var(--paper);
-    border-right: var(--bw-thick) solid var(--line);
-    padding: var(--sp-4) var(--sp-3);
-    display: flex;
-    flex-direction: column;
-    gap: var(--sp-3);
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    position: relative;
-    min-height: 0;
-    z-index: 200;
-    transition: background-color 0.2s ease, border-color 0.2s ease;
-  }
-
-  .sidebar::before {
-    content: "";
-    position: absolute;
-    top: 0; left: 0;
-    width: 8px; height: 100%;
-    background-image:
-      linear-gradient(45deg, var(--ink) 25%, transparent 25%, transparent 75%, var(--ink) 75%),
-      linear-gradient(45deg, var(--ink) 25%, transparent 25%, transparent 75%, var(--ink) 75%);
-    background-size: 8px 8px;
-    background-position: 0 0, 4px 4px;
-    opacity: 0.15;
-    pointer-events: none;
-  }
-
-  .sidebar::after {
-    content: "";
-    position: absolute;
-    top: 0; right: -3px;
-    width: 3px; height: 100%;
-    background: repeating-linear-gradient(180deg,
-      var(--accent) 0 10px,
-      var(--accent-2) 10px 20px,
-      var(--accent-3) 20px 30px,
-      var(--ink) 30px 40px);
-    pointer-events: none;
-    opacity: 0.85;
-  }
-
-  /* MASTHEAD */
-  .masthead {
-    padding-left: var(--sp-4);
-    padding-bottom: var(--sp-2);
-    border-bottom: var(--bw-thick) solid var(--line);
-    position: relative;
-    flex-shrink: 0;
-  }
-  .masthead::after {
-    content: "EST. ∞ · BCE→CE · IST";
-    position: absolute;
-    bottom: calc(var(--sp-3) * -1);
-    left: var(--sp-4);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: var(--fs-xs);
-    font-weight: 700;
-    letter-spacing: 0.22em;
-    color: var(--mute);
-    background: var(--paper);
-    padding: 0 var(--sp-1);
-  }
-
-  .masthead h1 {
-    font-family: 'Archivo Black', 'IBM Plex Mono', sans-serif;
-    font-size: var(--fs-2xl);
-    font-weight: 400;
-    letter-spacing: -0.035em;
-    text-transform: uppercase;
-    line-height: 0.9;
-    color: var(--ink);
-  }
-
-  .masthead h1 .tri {
-    color: var(--accent);
-    display: inline-block;
-    transform: translateY(-2px);
-    margin-right: 2px;
-  }
-
-  .masthead .tagline {
-    margin-top: var(--sp-1);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: var(--fs-xs);
-    font-weight: 700;
-    letter-spacing: 0.22em;
-    color: var(--mute);
-    text-transform: uppercase;
-  }
-
-  /* ============================================================
-     BUTTONS
-     ============================================================ */
-  button {
-    padding: var(--sp-2) var(--sp-3);
-    font-family: 'IBM Plex Mono', monospace;
-    font-weight: 700;
-    font-size: var(--fs-sm);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    cursor: pointer;
-    border: var(--bw-mid) solid var(--ink);
-    background: var(--paper);
-    color: var(--ink);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--sp-1);
-    user-select: none;
-    -webkit-user-select: none;
-    transition: background-color 0.15s ease, color 0.15s ease, transform 0.08s;
-    position: relative;
-    touch-action: manipulation;
-    min-height: var(--tap);
-  }
-  button:hover { background: var(--ink); color: var(--paper); }
-  button:active { transform: translate(2px, 2px); }
-
-  #newEventBtn {
-    background: var(--accent);
-    color: #fff;
-    border-color: var(--ink);
-    font-weight: 700;
-    padding: var(--sp-3) var(--sp-4);
-    font-size: var(--fs-md);
-    letter-spacing: 0.1em;
-    box-shadow: var(--shadow-hard);
-    justify-content: flex-start;
-    flex-shrink: 0;
-  }
-  #newEventBtn::before {
-    content: "◼";
-    font-size: 0.6em;
-    margin-right: 4px;
-  }
-  #newEventBtn:hover { background: var(--ink); color: var(--accent); }
-  #newEventBtn:active {
-    box-shadow: none;
-    transform: translate(4px, 4px);
-  }
-
-  /* DATE READOUT */
-  .dateBox {
-    background: var(--ink);
-    color: var(--paper);
-    padding: var(--sp-3) var(--sp-3) var(--sp-2);
-    border: var(--bw-mid) solid var(--ink);
-    position: relative;
-    overflow: hidden;
-    box-shadow: var(--shadow-hard);
-    flex-shrink: 0;
-    transition: background-color 0.2s ease, color 0.2s ease;
-  }
-  .dateBox::before {
-    content: "◉ LIVE READOUT";
-    display: block;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: var(--fs-xs);
-    font-weight: 700;
-    letter-spacing: 0.28em;
-    color: var(--accent-2);
-    text-align: left;
-    margin-bottom: var(--sp-2);
-  }
-  .dateBox::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: repeating-linear-gradient(0deg,
-      transparent 0 2px,
-      rgba(255,255,255,0.055) 2px 3px);
-    pointer-events: none;
-  }
-  #todayDateBig {
-    font-family: 'VT323', monospace;
-    font-size: var(--fs-3xl);
-    font-weight: 400;
-    letter-spacing: 0.08em;
-    line-height: 1;
-    color: var(--accent-2);
-    text-shadow: 0 0 10px rgba(255, 209, 0, 0.5);
-    font-variant-numeric: tabular-nums;
-  }
-  #todayDateSub {
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: var(--fs-xs);
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.22em;
-    margin-top: var(--sp-1);
-    color: #97907d;
-  }
-
-  /* INPUTS */
-  input, select, textarea {
-    width: 100%;
-    padding: var(--sp-2) var(--sp-3);
-    border: var(--bw-mid) solid var(--ink);
-    background: var(--paper);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: var(--fs-sm);
-    font-weight: 500;
-    letter-spacing: 0.05em;
-    outline: none;
-    color: var(--ink);
-    text-transform: uppercase;
-    min-height: var(--tap);
-    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-  }
-  input::placeholder, textarea::placeholder {
-    color: var(--mute);
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-  }
-  input:focus, select:focus, textarea:focus {
-    background: var(--accent-2);
-    color: #14120d;
-    outline: 2px solid var(--ink);
-    outline-offset: 1px;
-  }
-
-  /* YEAR SELECTOR */
-  .year-row { display: flex; align-items: stretch; }
-  .year-row button {
-    border: var(--bw-mid) solid var(--ink);
-    padding: 0 var(--sp-2);
-    min-width: clamp(44px, 5vw, 60px);
-    font-weight: 700;
-    font-size: var(--fs-sm);
-  }
-  .year-row button:first-child { border-right: none; }
-  .year-row button:last-child  { border-left: none; }
-  .year-row select {
-    border-left: var(--bw-mid) solid var(--ink);
-    border-right: var(--bw-mid) solid var(--ink);
-    text-align: center;
-    font-weight: 700;
-    font-size: var(--fs-sm);
-    letter-spacing: 0.12em;
-    padding: var(--sp-2) var(--sp-1);
-  }
-
-  .decade-row { display: flex; gap: var(--sp-1); }
-  .decade-row button {
-    flex: 1;
-    padding: var(--sp-2) var(--sp-1);
-    font-size: var(--fs-sm);
-    font-weight: 700;
-  }
-
-  .importExport { display: flex; gap: var(--sp-1); }
-  .importExport button {
-    flex: 1;
-    font-size: var(--fs-sm);
-    padding: var(--sp-2) var(--sp-1);
-  }
-
-  .sidebar-foot {
-    margin-top: auto;
-    padding-top: var(--sp-2);
-    border-top: var(--bw-mid) dashed var(--mute);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: var(--fs-xs);
-    text-align: center;
-    letter-spacing: 0.28em;
-    text-transform: uppercase;
-    color: var(--mute);
-    font-weight: 700;
-    flex-shrink: 0;
-  }
-  .sidebar-foot span { color: var(--accent); }
-
-  /* ============================================================
-     MAIN
-     ============================================================ */
-  .calendarContainer {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    background: var(--paper);
-    min-width: 0;
-    min-height: 0;
-    transition: background-color 0.2s ease;
-  }
-
-  .calendarHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--sp-3) var(--sp-4);
-    background: var(--paper);
-    border-bottom: var(--bw-thick) solid var(--line);
-    gap: var(--sp-2);
-    flex-wrap: wrap;
-    position: relative;
-    flex-shrink: 0;
-    transition: background-color 0.2s ease, border-color 0.2s ease;
-  }
-  .calendarHeader::after {
-    content: "";
-    position: absolute;
-    left: 0; right: 0; bottom: -3px;
-    height: 3px;
-    background: repeating-linear-gradient(90deg,
-      var(--accent) 0 16px,
-      var(--accent-2) 16px 32px,
-      var(--accent-3) 32px 48px,
-      var(--ink) 48px 64px);
-    opacity: 0.55;
-  }
-
-  .leftHeader, .rightHeader {
-    display: flex; gap: var(--sp-1); align-items: center; flex-wrap: wrap;
-  }
-  .leftHeader button, .rightHeader button {
-    padding: var(--sp-2) var(--sp-3);
-    font-size: var(--fs-sm);
-    font-weight: 700;
-    box-shadow: var(--shadow-thin);
-  }
-  .leftHeader button:active, .rightHeader button:active {
-    box-shadow: none;
-    transform: translate(2px, 2px);
-  }
-
-  .viewBtn {
-    background: var(--paper);
-    border: var(--bw-mid) solid var(--ink);
-    color: var(--ink);
-    padding: var(--sp-2) var(--sp-3);
-  }
-  .viewBtn.active {
-    background: var(--ink);
-    color: var(--paper);
-    box-shadow: none;
-    transform: translate(2px, 2px);
-  }
-
-  .calendarHeader h2 {
-    font-family: 'VT323', monospace;
-    font-size: var(--fs-2xl);
-    font-weight: 400;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--ink);
-    line-height: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    min-width: 0;
-    flex: 1 1 auto;
-  }
-
-  .weekDays {
-    display: grid;
-    grid-template-columns: repeat(7, minmax(0, 1fr));
-    background: var(--ink);
-    color: var(--paper);
-    padding: var(--sp-2) 0;
-    text-align: center;
-    font-family: 'IBM Plex Mono', monospace;
-    font-weight: 700;
-    text-transform: uppercase;
-    font-size: var(--fs-xs);
-    letter-spacing: clamp(0.05em, 0.3vw, 0.3em);
-    flex-shrink: 0;
-    transition: background-color 0.2s ease, color 0.2s ease;
-  }
-  .weekDays div {
-    border-right: 1px solid var(--line-soft);
-    opacity: 0.9;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    padding: 0 var(--sp-1);
-  }
-  .weekDays div:last-child { border-right: none; }
-
-  /* GRID */
-  #calendarGrid {
-    flex: 1 1 auto;
-    display: grid;
-    grid-template-columns: repeat(7, minmax(0, 1fr));
-    grid-auto-rows: minmax(var(--cell-min-h), auto);
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    background: var(--paper);
-    border-left: var(--bw-thick) solid var(--line);
-    border-right: var(--bw-thick) solid var(--line);
-    min-height: 0;
-    transition: background-color 0.2s ease;
-  }
-
-  .dayCell {
-    background: var(--paper);
-    border-right: var(--bw-mid) solid var(--ink);
-    border-bottom: var(--bw-mid) solid var(--ink);
-    padding: var(--sp-2);
-    overflow: hidden;
-    cursor: pointer;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: var(--sp-1);
-    min-height: 0;
-    touch-action: manipulation;
-    transition: background-color 0.15s ease;
-  }
-  .dayCell:hover { background: var(--hover); }
-
-  .dayCell.today-highlight {
-    background: var(--today-bg);
-    color: var(--today-fg);
-  }
-  .dayCell.today-highlight .dayNumber { color: var(--today-fg); }
-
-  .dayNumber {
-    font-family: 'VT323', monospace;
-    font-weight: 400;
-    font-size: var(--fs-xl);
-    line-height: 1;
-    display: flex;
-    align-items: center;
-    gap: var(--sp-1);
-    flex-wrap: wrap;
-    letter-spacing: 0.02em;
-    color: var(--ink);
-    flex-shrink: 0;
-  }
-
-  .today-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: #fff;
-    color: var(--accent);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: var(--fs-xs);
-    font-weight: 700;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    padding: 1px 4px;
-    border: 1px solid #fff;
-  }
-  html[data-theme="dark"] .today-icon {
-    background: var(--today-fg);
-    color: var(--today-bg);
-    border-color: var(--today-fg);
-  }
-
-  .eventChip {
-    padding: 2px 4px;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: var(--fs-xs);
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: var(--chip-fg);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    cursor: grab;
-    border: 1px solid var(--ink);
-    flex-shrink: 0;
-  }
-  .eventChip:active { cursor: grabbing; }
-
-  /* ============================================================
-     MODAL
-     ============================================================ */
-  .modal {
-    position: fixed; inset: 0;
-    background: rgba(0, 0, 0, 0.78);
-    display: flex; justify-content: center; align-items: center;
-    z-index: 1000;
-    padding: var(--sp-4);
-    padding-top: calc(var(--sp-4) + env(safe-area-inset-top));
-    padding-bottom: calc(var(--sp-4) + env(safe-area-inset-bottom));
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-  .hidden { display: none !important; }
-
-  .modalContent {
-    width: min(500px, 100%);
-    max-height: 90vh;
-    max-height: 90dvh;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    background: var(--paper);
-    padding: var(--sp-5) var(--sp-4) var(--sp-4);
-    display: flex; flex-direction: column; gap: var(--sp-3);
-    border: var(--bw-thick) solid var(--ink);
-    box-shadow: 10px 10px 0 var(--ink);
-    position: relative;
-    color: var(--ink);
-    transition: background-color 0.2s ease, color 0.2s ease;
-  }
-
-  .modalContent::before {
-    content: "◼ ENTRY";
-    position: absolute;
-    top: -12px; left: var(--sp-4);
-    background: var(--accent-2);
-    color: var(--ink);
-    border: var(--bw-mid) solid var(--ink);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: var(--fs-xs);
-    font-weight: 700;
-    letter-spacing: 0.2em;
-    padding: 2px var(--sp-2);
-    transform: rotate(-2deg);
-  }
-
-  .modalContent h2 {
-    font-family: 'Archivo Black', sans-serif;
-    font-size: var(--fs-xl);
-    font-weight: 400;
-    letter-spacing: -0.02em;
-    text-transform: uppercase;
-    border-bottom: var(--bw-mid) solid var(--ink);
-    padding-bottom: var(--sp-2);
-    margin-bottom: var(--sp-1);
-    color: var(--ink);
-  }
-
-  .modalActions {
-    display: flex;
-    gap: var(--sp-2);
-    margin-top: var(--sp-2);
-    flex-wrap: wrap;
-  }
-  .modalActions button {
-    flex: 1 1 min(100px, 45%);
-    padding: var(--sp-3);
-    font-weight: 700;
-    font-size: var(--fs-sm);
-    letter-spacing: 0.08em;
-    box-shadow: var(--shadow-thin);
-  }
-  .modalActions button:active {
-    box-shadow: none;
-    transform: translate(2px, 2px);
-  }
-
-  #saveEventBtn {
-    background: var(--accent);
-    color: #fff;
-    border-color: var(--ink);
-  }
-  #saveEventBtn:hover { background: var(--ink); color: var(--accent); }
-
-  #deleteEventBtn {
-    background: var(--paper);
-    color: var(--ink);
-    border-color: var(--ink);
-  }
-  #deleteEventBtn:hover {
-    background: #b30000;
-    color: #fff;
-    border-color: #b30000;
-  }
-
-  /* ============================================================
-     TAB BAR (mobile)
-     ============================================================ */
-  .tabbar {
-    display: none;
-    background: var(--paper);
-    border-top: var(--bw-thick) solid var(--line);
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    flex-shrink: 0;
-    z-index: 150;
-    transition: background-color 0.2s ease, border-color 0.2s ease;
-  }
-
-  .tabbar button {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 2px;
-    padding: var(--sp-2) var(--sp-1);
-    background: var(--paper);
-    border: none;
-    border-right: var(--bw-mid) solid var(--line-soft);
-    color: var(--ink);
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: var(--fs-xs);
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    min-height: var(--tap);
-    cursor: pointer;
-    touch-action: manipulation;
-  }
-  .tabbar button:last-child { border-right: none; }
-  .tabbar button .icon {
-    font-size: var(--fs-lg);
-    line-height: 1;
-  }
-  .tabbar button.active {
-    background: var(--ink);
-    color: var(--paper);
-  }
-  .tabbar button:active {
-    background: var(--hover);
-  }
-
-  /* ============================================================
-     SCROLLBARS
-     ============================================================ */
-  ::-webkit-scrollbar { width: 10px; height: 10px; }
-  ::-webkit-scrollbar-track {
-    background: var(--sb-track);
-    border-left: var(--bw-mid) solid var(--ink);
-  }
-  ::-webkit-scrollbar-thumb {
-    background: var(--sb-thumb);
-    border: 3px solid var(--sb-track);
-  }
-  ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
-
-  @media (hover: none) {
-    ::-webkit-scrollbar { display: none; }
-  }
-
-  /* ============================================================
-     RESPONSIVE — sidebar drawer, header wrap, grid resize, buttons stack
-     ============================================================ */
-
-  /* Ultra-wide */
-  @media (min-width: 1800px) {
     :root {
-      --sidebar-w: clamp(300px, 20vw, 400px);
-    }
-  }
-
-  /* ── TABLET: sidebar becomes slide-out drawer ────────────── */
-  @media (max-width: 1024px) {
-    #menuToggle { display: inline-flex; }
-
-    .sidebar {
-      position: fixed;
-      top: 0; left: 0;
-      height: 100vh;
-      height: 100dvh;
-      width: clamp(260px, 40vw, 340px);
-      max-width: 88vw;
-      transform: translateX(-100%);
-      transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
-                  background-color 0.2s ease;
-      box-shadow: 6px 0 0 rgba(0,0,0,0.25);
-      padding-top: calc(var(--sp-4) + env(safe-area-inset-top));
-      padding-bottom: calc(var(--sp-4) + env(safe-area-inset-bottom));
-    }
-    .sidebar.open { transform: translateX(0); }
-
-    .calendarHeader {
-      padding-left: calc(var(--tap) + var(--sp-4));
-      padding-top: calc(var(--sp-3) + env(safe-area-inset-top));
+      --alu-light: #e8eaed;
+      --alu-mid: #d4d7dc;
+      --alu-dark: #b8bcc4;
+      --accent-blue: #2d7ff9;
+      --accent-green: #27c93f;
+      --text-dark: #1a1d22;
+      --text-muted: #6b7280;
     }
 
-    .calendarHeader h2 {
-      font-size: var(--fs-xl);
-    }
-  }
-
-  /* ── PHONE: tab bar appears, grid denser, header wraps, buttons stack */
-  @media (max-width: 640px) {
-    .app {
-      flex-direction: column;
-      padding-top: 0;
-      padding-bottom: 0;
-    }
-
-    /* Make sure container stacks correctly */
-    .sidebar {
-      width: 85vw;
-      max-width: 340px;
-      z-index: 250;
+    body {
+      background: #1c1f26;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 2rem 1.5rem;
+      color: var(--text-dark);
+      line-height: 1.4;
+      -webkit-font-smoothing: antialiased;
+      background-image: radial-gradient(ellipse at 50% 0%, #2a3040 0%, #1c1f26 60%);
     }
 
-    .calendarContainer {
+    .app-window {
+      max-width: 1240px;
+      width: 100%;
+      background-image: linear-gradient(180deg, #f0f2f5 0%, #d8dbe0 4%, #c8ccd3 100%);
+      border-radius: 14px;
+      box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.9) inset,
+        0 -1px 0 rgba(0, 0, 0, 0.1) inset,
+        0 0 0 1px rgba(0, 0, 0, 0.4),
+        0 30px 60px -12px rgba(0, 0, 0, 0.7),
+        0 18px 36px -18px rgba(0, 0, 0, 0.8);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .app-window::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: repeating-linear-gradient(
+        90deg,
+        rgba(255,255,255,0.02) 0px,
+        rgba(255,255,255,0.02) 1px,
+        transparent 1px,
+        transparent 2px
+      );
+      pointer-events: none;
+      border-radius: 14px;
+    }
+
+    .title-bar {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem 1.25rem;
+      background: linear-gradient(180deg, #3a4150 0%, #2c3340 100%);
+      border-bottom: 1px solid #1a1f28;
+      box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.08) inset,
+        0 -1px 3px rgba(0, 0, 0, 0.4);
+      position: relative;
+      z-index: 5;
+    }
+
+    .traffic-lights {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      margin-right: 1.25rem;
+    }
+
+    .traffic-light {
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      border: 1px solid rgba(0,0,0,0.3);
+      box-shadow:
+        0 1px 0 rgba(255,255,255,0.3) inset,
+        0 -1px 2px rgba(0,0,0,0.2) inset,
+        0 1px 2px rgba(0,0,0,0.4);
+    }
+
+    .traffic-light.red    { background: linear-gradient(180deg, #ff8a80, #ff5f56 40%, #d9362e); }
+    .traffic-light.yellow { background: linear-gradient(180deg, #ffd97a, #ffbd2e 40%, #d99614); }
+    .traffic-light.green  { background: linear-gradient(180deg, #7be08f, #27c93f 40%, #189a2c); }
+
+    .title-text {
       flex: 1;
-      min-height: 0;
-    }
-
-    /* ── HEADER: wraps cleanly into rows ─────────────────── */
-    .calendarHeader {
-      padding: var(--sp-2) var(--sp-2) var(--sp-2) calc(var(--tap) + var(--sp-3));
-      padding-top: calc(var(--sp-2) + env(safe-area-inset-top));
-      gap: var(--sp-2);
-      align-items: stretch;
-      flex-direction: column;
-    }
-
-    /* Title takes full width, in its own row */
-    .calendarHeader h2 {
-      order: -1;
-      font-size: var(--fs-lg);
-      width: 100%;
       text-align: center;
-      padding: var(--sp-1) 0;
-      border-bottom: 1px dashed var(--line-soft);
-      flex: none;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #c8ceda;
+      letter-spacing: 0.02em;
+      text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.6);
     }
 
-    /* Nav row: prev / today / next — equal width */
-    .leftHeader {
-      order: 0;
-      flex: none;
-      display: grid;
-      grid-template-columns: 1fr 1.5fr 1fr;
-      gap: var(--sp-1);
-      width: 100%;
-    }
-    .leftHeader button {
-      width: 100%;
-      padding: var(--sp-2) var(--sp-1);
-      font-size: var(--fs-xs);
-      letter-spacing: 0.04em;
-      box-shadow: 1px 1px 0 var(--ink);
+    .title-actions {
+      display: flex;
+      gap: 0.4rem;
+      align-items: center;
     }
 
-    /* Views row: 4 buttons equal width, stacked below */
-    .rightHeader {
-      order: 1;
-      flex: none;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      width: 100%;
-      gap: var(--sp-1);
-    }
-    .rightHeader .viewBtn {
-      width: 100%;
-      padding: var(--sp-2) var(--sp-1);
-      font-size: var(--fs-xs);
-      letter-spacing: 0.04em;
-      box-shadow: 1px 1px 0 var(--ink);
+    .title-action {
+      width: 24px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #8b93a3;
+      font-size: 0.7rem;
+      border-radius: 4px;
+      transition: background 0.15s;
+      cursor: pointer;
     }
 
-    /* ── GRID: resize cells for narrow screen ─────────────── */
-    #calendarGrid {
-      grid-auto-rows: minmax(58px, auto);
-      border-left-width: 2px;
-      border-right-width: 2px;
+    .title-action:hover {
+      background: rgba(255,255,255,0.1);
+      color: #d8dde6;
     }
-    .dayCell {
-      padding: 3px;
-      gap: 2px;
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      padding: 0.9rem 1.5rem;
+      background: linear-gradient(180deg, #eef0f3 0%, #d5d9df 50%, #c3c8d0 100%);
+      border-bottom: 1px solid #a8aeb8;
+      box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.9) inset,
+        0 -1px 0 rgba(255, 255, 255, 0.4) inset;
+      gap: 1rem;
     }
-    .dayNumber {
-      font-size: var(--fs-md);
-      gap: 2px;
+
+    .brand { display: flex; align-items: center; gap: 0.75rem; }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 9px;
+      background: linear-gradient(180deg, #4a90ff 0%, #2d7ff9 50%, #1a5fc4 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-size: 1.2rem;
+      box-shadow:
+        0 1px 0 rgba(255,255,255,0.4) inset,
+        0 -2px 4px rgba(0,0,0,0.3) inset,
+        0 3px 6px -1px rgba(26, 95, 196, 0.5),
+        0 0 0 1px rgba(20, 75, 160, 0.8);
+      position: relative;
     }
-    .today-icon {
-      font-size: 8px;
-      padding: 0 3px;
+
+    .brand-icon::after {
+      content: "";
+      position: absolute;
+      top: 2px; left: 3px; right: 3px;
+      height: 40%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.5), rgba(255,255,255,0));
+      border-radius: 6px;
+      pointer-events: none;
+    }
+
+    .brand-text {
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #1a1d22;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
+    }
+
+    .brand-text span { color: var(--accent-blue); }
+
+    .toolbar-divider {
+      width: 1px;
+      height: 28px;
+      background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.15) 20%, rgba(0,0,0,0.15) 80%, rgba(0,0,0,0) 100%);
+      box-shadow: 1px 0 0 rgba(255, 255, 255, 0.7);
+    }
+
+    .toolbar-status {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
       letter-spacing: 0.06em;
-    }
-    .eventChip {
-      font-size: 9px;
-      padding: 1px 3px;
-      letter-spacing: 0;
+      margin-left: auto;
     }
 
-    /* ── WEEKDAY STRIP: tighter letters ────────────────────── */
-    .weekDays {
-      font-size: var(--fs-xs);
-      letter-spacing: 0.08em;
-      padding: var(--sp-1) 0;
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-green);
+      box-shadow:
+        0 0 0 2px rgba(39, 201, 63, 0.2),
+        0 0 8px rgba(39, 201, 63, 0.8),
+        0 1px 0 rgba(255,255,255,0.4) inset;
+      animation: pulse 2s ease-in-out infinite;
     }
-    .weekDays div { padding: 0; }
 
-    /* ── TAB BAR: visible on phone ────────────────────────── */
-    .tabbar {
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .workspace {
       display: grid;
-      padding-bottom: env(safe-area-inset-bottom);
+      grid-template-columns: 380px 1fr;
+      background: var(--alu-light);
+      min-height: 560px;
     }
 
-    /* ── MODAL: bottom sheet ──────────────────────────────── */
-    .modal {
-      padding: 0;
-      align-items: flex-end;
-    }
-    .modalContent {
-      width: 100%;
-      max-width: 100%;
-      max-height: 92dvh;
-      padding: var(--sp-4) var(--sp-3) calc(var(--sp-3) + env(safe-area-inset-bottom));
-      padding-top: calc(var(--sp-5) + env(safe-area-inset-top));
-      gap: var(--sp-2);
-      box-shadow: none;
-      border-left: none;
-      border-right: none;
-      border-bottom: none;
-      border-top: var(--bw-thick) solid var(--ink);
-    }
-    .modalContent h2 {
-      font-size: var(--fs-lg);
-    }
-    /* Buttons stack full width */
-    .modalActions {
+    .control-panel {
+      padding: 1.5rem;
+      background: linear-gradient(180deg, #dcdfe4 0%, #cbd0d7 100%);
+      border-right: 1px solid #a8aeb8;
+      box-shadow:
+        1px 0 0 rgba(255, 255, 255, 0.6) inset,
+        -1px 0 3px rgba(0, 0, 0, 0.05) inset;
       display: flex;
       flex-direction: column;
-      gap: var(--sp-2);
+      gap: 1.25rem;
     }
-    .modalActions button {
-      width: 100%;
-      flex: none;
-      padding: var(--sp-3);
-      font-size: var(--fs-sm);
-      min-height: var(--tap);
-    }
-    #saveEventBtn { order: 1; }
-    #cancelBtn    { order: 2; }
-    #deleteEventBtn { order: 3; }
 
-    /* Hide hamburger on phone — tab bar handles nav */
-    #menuToggle { display: inline-flex; }
-  }
+    .panel-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #5a6068;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
 
-  /* ── VERY SMALL PHONE (≤ 380px) ──────────────────────────── */
-  @media (max-width: 380px) {
-    :root {
-      --sidebar-w: 85vw;
+    .dropzone {
+      border: 2px dashed #949aa5;
+      border-radius: 10px;
+      background: linear-gradient(180deg, #eef0f3 0%, #e0e4ea 100%);
+      padding: 1.75rem 1rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.9) inset,
+        0 -1px 0 rgba(0, 0, 0, 0.06) inset,
+        0 2px 4px rgba(0, 0, 0, 0.06);
+      position: relative;
+      user-select: none;
     }
-    .calendarHeader h2 { font-size: var(--fs-md); }
-    .leftHeader button,
-    .rightHeader .viewBtn {
-      font-size: 9px;
-      padding: var(--sp-1) 2px;
-      letter-spacing: 0.02em;
-    }
-    .dayNumber { font-size: 13px; }
-    .eventChip { font-size: 8px; padding: 1px 2px; }
-    #calendarGrid { grid-auto-rows: minmax(52px, auto); }
-    .weekDays { font-size: 8px; letter-spacing: 0.02em; }
-    .tabbar button { font-size: 9px; }
-    .tabbar button .icon { font-size: var(--fs-md); }
-  }
 
-  /* ── LANDSCAPE PHONE ─────────────────────────────────────── */
-  @media (max-width: 900px) and (orientation: landscape) {
-    .calendarHeader {
-      padding-top: calc(var(--sp-2) + env(safe-area-inset-top));
-      padding-bottom: var(--sp-2);
-      flex-direction: row;
-      flex-wrap: wrap;
+    .dropzone:hover,
+    .dropzone.dragover {
+      border-color: var(--accent-blue);
+      background: linear-gradient(180deg, #e8f0ff 0%, #d8e6ff 100%);
+      box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.9) inset,
+        0 0 0 3px rgba(45, 127, 249, 0.15),
+        0 4px 8px rgba(45, 127, 249, 0.15);
+      transform: translateY(-1px);
     }
-    .calendarHeader h2 {
-      order: 0;
-      font-size: var(--fs-md);
-      flex: 1 1 auto;
-      border-bottom: none;
-      width: auto;
-      text-align: left;
-    }
-    .leftHeader,
-    .rightHeader {
+
+    .dropzone.dragover { border-style: solid; }
+
+    .dropzone-icon {
+      width: 56px;
+      height: 56px;
+      margin: 0 auto 0.75rem;
+      border-radius: 50%;
+      background: linear-gradient(180deg, #ffffff 0%, #e2e6ec 100%);
       display: flex;
-      width: auto;
-      flex: 0 0 auto;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent-blue);
+      font-size: 1.5rem;
+      box-shadow:
+        0 1px 0 rgba(255, 255, 255, 1) inset,
+        0 -2px 4px rgba(0, 0, 0, 0.08) inset,
+        0 3px 6px rgba(0, 0, 0, 0.12);
+      pointer-events: none;
+      transition: transform 0.2s;
     }
-    .leftHeader button,
-    .rightHeader .viewBtn {
-      padding: var(--sp-1) var(--sp-2);
-      font-size: 10px;
-    }
-    #calendarGrid { grid-auto-rows: minmax(50px, auto); }
-    .dayCell { padding: 2px; }
-    .dayNumber { font-size: 12px; }
-    .eventChip { font-size: 8px; padding: 1px 2px; }
-    .tabbar button { min-height: 42px; padding: var(--sp-1); }
-  }
 
-  /* ── TOUCH TARGETS ──────────────────────────────────────── */
-  @media (hover: none) and (pointer: coarse) {
-    button { min-height: var(--tap); }
-    .dayCell { cursor: default; }
-    .eventChip { cursor: pointer; }
-  }
+    .dropzone:hover .dropzone-icon { transform: scale(1.05); }
 
-  /* ── REDUCED MOTION ─────────────────────────────────────── */
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-      transition: none !important;
-      animation: none !important;
+    .dropzone h3 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #2a2f38;
+      margin-bottom: 0.25rem;
+      pointer-events: none;
     }
-  }
-</style>
+
+    .dropzone p {
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      font-family: 'IBM Plex Mono', monospace;
+      pointer-events: none;
+    }
+
+    .file-info {
+      display: none;
+      align-items: center;
+      gap: 0.75rem;
+      background: linear-gradient(180deg, #ffffff 0%, #eef0f3 100%);
+      padding: 0.7rem 0.9rem;
+      border-radius: 8px;
+      border: 1px solid #a8aeb8;
+      box-shadow:
+        0 1px 0 rgba(255, 255, 255, 1) inset,
+        0 -1px 0 rgba(0, 0, 0, 0.05) inset,
+        0 2px 4px rgba(0, 0, 0, 0.08);
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #2a2f38;
+    }
+
+    .file-info.active { display: flex; }
+
+    .file-info-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 6px;
+      background: linear-gradient(180deg, #4a90ff 0%, #2d7ff9 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+      box-shadow:
+        0 1px 0 rgba(255,255,255,0.4) inset,
+        0 -1px 3px rgba(0,0,0,0.2) inset,
+        0 2px 4px rgba(26, 95, 196, 0.3);
+    }
+
+    .file-info-name {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.72rem;
+    }
+
+    .file-info-check {
+      color: var(--accent-green);
+      font-size: 1rem;
+      filter: drop-shadow(0 1px 1px rgba(39, 201, 63, 0.4));
+    }
+
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .btn {
+      border: none;
+      padding: 0.85rem 1rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.12s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      position: relative;
+      top: 0;
+      user-select: none;
+      text-transform: uppercase;
+    }
+
+    .btn:active:not(:disabled) { top: 2px; }
+
+    .btn-primary {
+      color: #fff;
+      background: linear-gradient(180deg, #4a90ff 0%, #2d7ff9 50%, #1a5fc4 100%);
+      box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.5) inset,
+        0 -2px 4px rgba(0, 0, 0, 0.25) inset,
+        0 3px 0 #144a9e,
+        0 4px 8px rgba(26, 95, 196, 0.4);
+      text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: linear-gradient(180deg, #5a9dff 0%, #3d8ff9 50%, #2a6fd4 100%);
+    }
+
+    .btn-primary:active:not(:disabled) {
+      box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.3) inset,
+        0 -1px 2px rgba(0, 0, 0, 0.2) inset,
+        0 1px 0 #144a9e,
+        0 1px 2px rgba(26, 95, 196, 0.3);
+    }
+
+    .btn-primary:disabled {
+      background: linear-gradient(180deg, #b8bcc4 0%, #a0a5ae 100%);
+      box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.4) inset,
+        0 -1px 2px rgba(0, 0, 0, 0.15) inset,
+        0 2px 0 #7a7f88;
+      cursor: not-allowed;
+      color: #e8eaed;
+      text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-secondary {
+      background: linear-gradient(180deg, #ffffff 0%, #e2e6ec 100%);
+      color: #2a2f38;
+      box-shadow:
+        0 1px 0 rgba(255, 255, 255, 1) inset,
+        0 -2px 4px rgba(0, 0, 0, 0.08) inset,
+        0 3px 0 #b0b5be,
+        0 4px 6px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(0, 0, 0, 0.15);
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: linear-gradient(180deg, #ffffff 0%, #eef0f3 100%);
+    }
+
+    .btn-success {
+      color: #fff;
+      background: linear-gradient(180deg, #4ade6a 0%, #27c93f 50%, #189a2c 100%);
+      box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.5) inset,
+        0 -2px 4px rgba(0, 0, 0, 0.25) inset,
+        0 3px 0 #0f7521,
+        0 4px 8px rgba(24, 154, 44, 0.4);
+      text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+    }
+
+    .btn-success:hover:not(:disabled) {
+      background: linear-gradient(180deg, #5aee7a 0%, #37d94f 50%, #28aa3c 100%);
+    }
+
+    .btn-success:disabled {
+      background: linear-gradient(180deg, #b8bcc4 0%, #a0a5ae 100%);
+      box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.4) inset,
+        0 -1px 2px rgba(0, 0, 0, 0.15) inset,
+        0 2px 0 #7a7f88;
+      cursor: not-allowed;
+      color: #e8eaed;
+    }
+
+    /* Sensitivity slider */
+    .sensitivity-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .sensitivity-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #5a6068;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
+    }
+
+    .sensitivity-value {
+      font-family: 'IBM Plex Mono', monospace;
+      color: var(--accent-blue);
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 8px;
+      border-radius: 4px;
+      background: linear-gradient(180deg, #a8aeb8 0%, #c0c5cd 100%);
+      box-shadow:
+        0 1px 2px rgba(0,0,0,0.3) inset,
+        0 -1px 0 rgba(255,255,255,0.5);
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: linear-gradient(180deg, #ffffff 0%, #d8dbe0 100%);
+      border: 1px solid #8a8f99;
+      cursor: pointer;
+      box-shadow:
+        0 1px 0 rgba(255,255,255,1) inset,
+        0 -1px 2px rgba(0,0,0,0.15) inset,
+        0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: linear-gradient(180deg, #ffffff 0%, #d8dbe0 100%);
+      border: 1px solid #8a8f99;
+      cursor: pointer;
+      box-shadow:
+        0 1px 0 rgba(255,255,255,1) inset,
+        0 -1px 2px rgba(0,0,0,0.15) inset,
+        0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .security-note {
+      margin-top: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #5a6068;
+      padding: 0.6rem;
+      background: linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.1) 100%);
+      border-radius: 6px;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6) inset;
+    }
+
+    .security-note i {
+      color: var(--accent-green);
+      filter: drop-shadow(0 1px 1px rgba(39, 201, 63, 0.3));
+    }
+
+    .preview-panel {
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      background: linear-gradient(180deg, #f5f6f8 0%, #e8eaed 100%);
+      box-shadow:
+        inset 0 1px 3px rgba(0, 0, 0, 0.06),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.8);
+    }
+
+    .preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .preview-title {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #2a2f38;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
+    }
+
+    .preview-title i { color: var(--accent-blue); }
+
+    .preview-badge {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0.3rem 0.7rem;
+      border-radius: 20px;
+      background: linear-gradient(180deg, #4ade6a 0%, #27c93f 100%);
+      color: #fff;
+      text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.2);
+      box-shadow:
+        0 1px 0 rgba(255,255,255,0.4) inset,
+        0 -1px 2px rgba(0,0,0,0.15) inset,
+        0 2px 4px rgba(39, 201, 63, 0.3);
+    }
+
+    .canvas-stage {
+      flex: 1;
+      border-radius: 10px;
+      padding: 1rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 380px;
+      position: relative;
+      box-shadow:
+        0 0 0 1px #8a8f99,
+        0 1px 0 rgba(255, 255, 255, 0.8) inset,
+        0 2px 6px rgba(0, 0, 0, 0.15) inset,
+        0 4px 12px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      background-image:
+        linear-gradient(45deg, #e8eaed 25%, transparent 25%),
+        linear-gradient(-45deg, #e8eaed 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #e8eaed 75%),
+        linear-gradient(-45deg, transparent 75%, #e8eaed 75%);
+      background-size: 20px 20px;
+      background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+      background-color: #f5f6f8;
+    }
+
+    #resultCanvas {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .result-actions {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    .result-actions .btn { flex: 1; }
+
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.6rem 1.5rem;
+      background: linear-gradient(180deg, #2c3340 0%, #1e232c 100%);
+      border-top: 1px solid #4a5261;
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: #8b93a3;
+      font-family: 'IBM Plex Mono', monospace;
+      letter-spacing: 0.03em;
+      box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.06) inset,
+        0 -1px 0 rgba(0, 0, 0, 0.4) inset;
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .status-item i { color: #5a6070; font-size: 0.7rem; }
+
+    /* ---- SAVE MODAL (fallback for right-click save) ---- */
+    .save-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+    }
+
+    .save-modal.active { display: flex; }
+
+    .save-modal-inner {
+      background: linear-gradient(180deg, #f0f2f5 0%, #c8ccd3 100%);
+      border-radius: 14px;
+      max-width: 640px;
+      width: 100%;
+      padding: 1.5rem;
+      box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.9) inset,
+        0 0 0 1px rgba(0, 0, 0, 0.4),
+        0 30px 60px -12px rgba(0, 0, 0, 0.9);
+      border: 1px solid #a8aeb8;
+    }
+
+    .save-modal-title {
+      font-size: 1.1rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+      color: #1a1d22;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .save-modal-title i { color: var(--accent-blue); }
+
+    .save-modal-desc {
+      font-size: 0.8rem;
+      color: #5a6068;
+      margin-bottom: 1rem;
+      line-height: 1.5;
+    }
+
+    .save-modal-img-wrap {
+      background-image:
+        linear-gradient(45deg, #e8eaed 25%, transparent 25%),
+        linear-gradient(-45deg, #e8eaed 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #e8eaed 75%),
+        linear-gradient(-45deg, transparent 75%, #e8eaed 75%);
+      background-size: 20px 20px;
+      background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+      background-color: #f5f6f8;
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+      margin-bottom: 1rem;
+      box-shadow:
+        0 0 0 1px #8a8f99,
+        0 2px 6px rgba(0, 0, 0, 0.15) inset;
+      max-height: 45vh;
+      overflow: auto;
+    }
+
+    .save-modal-img-wrap img {
+      max-width: 100%;
+      max-height: 40vh;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .save-modal-actions {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .save-modal-actions .btn { flex: 1; }
+
+    @media (max-width: 900px) {
+      .workspace { grid-template-columns: 1fr; }
+      .control-panel { border-right: none; border-bottom: 1px solid #a8aeb8; }
+      .status-bar { flex-direction: column; gap: 0.3rem; text-align: center; }
+    }
+
+    @media (max-width: 600px) {
+      body { padding: 0.75rem 0.5rem; }
+      .toolbar { padding: 0.75rem 1rem; }
+      .brand-text { font-size: 1.1rem; }
+      .title-text { font-size: 0.7rem; }
+      .canvas-stage { min-height: 260px; }
+    }
+  </style>
 </head>
 <body>
+<div class="app-window">
 
-<div class="app" id="app">
-  <button id="menuToggle" aria-label="Open menu">☰</button>
-  <div id="sideBackdrop"></div>
-
-  <aside class="sidebar" id="sidebar">
-    <div class="masthead">
-      <h1><span class="tri">◼</span>RITMO</h1>
-      <div class="tagline">Rigid Retro Calendar</div>
+  <div class="title-bar">
+    <div class="traffic-lights">
+      <div class="traffic-light red"></div>
+      <div class="traffic-light yellow"></div>
+      <div class="traffic-light green"></div>
     </div>
-
-    <button id="newEventBtn">New Event</button>
-
-    <div class="dateBox">
-      <div id="todayDateBig">-- ---</div>
-      <div id="todayDateSub">--- · ----</div>
+    <div class="title-text">Trenne — Background Remover</div>
+    <div class="title-actions">
+      <div class="title-action"><i class="fas fa-minus"></i></div>
+      <div class="title-action"><i class="fas fa-expand"></i></div>
+      <div class="title-action"><i class="fas fa-times"></i></div>
     </div>
+  </div>
 
-    <input type="text" id="searchInput" placeholder="▸ SEARCH EVENTS">
-
-    <div class="year-row">
-      <button id="yearMinusBtn" title="-100 years">–100</button>
-      <select id="yearSelector" aria-label="Year"></select>
-      <button id="yearPlusBtn" title="+100 years">+100</button>
+  <div class="toolbar">
+    <div class="brand">
+      <div class="brand-icon"><i class="fas fa-magic"></i></div>
+      <span class="brand-text">Trenne<span>.</span></span>
     </div>
-
-    <div class="decade-row">
-      <button id="decadeMinusBtn">–10 YR</button>
-      <button id="decadePlusBtn">+10 YR</button>
+    <div class="toolbar-divider"></div>
+    <div class="toolbar-status">
+      <div class="status-dot"></div>
+      READY
     </div>
+  </div>
 
-    <button id="themeBtn">◐ DARK MODE</button>
+  <div class="workspace">
 
-    <div class="importExport">
-      <button id="exportBtn">▲ EXPORT</button>
-      <input type="file" id="importFile" hidden accept=".json,application/json">
-      <button id="importBtn">▼ IMPORT</button>
-    </div>
+    <div class="control-panel">
+      <div class="panel-title">Input</div>
 
-    <div class="sidebar-foot">BCE <span>◼</span> CE <span>◼</span> ∞</div>
-  </aside>
-
-  <main class="calendarContainer">
-    <header class="calendarHeader">
-      <div class="leftHeader">
-        <button id="prevBtn" aria-label="Previous">◀</button>
-        <button id="todayBtn">TODAY</button>
-        <button id="nextBtn" aria-label="Next">▶</button>
+      <div class="dropzone" id="uploadTrigger">
+        <div class="dropzone-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+        <h3>Drop image or click to browse</h3>
+        <p>PNG · JPG · WEBP — MAX 10MB</p>
       </div>
-      <h2 id="monthYear">---</h2>
-      <div class="rightHeader">
-        <button class="viewBtn active" data-view="month">MONTH</button>
-        <button class="viewBtn" data-view="week">WEEK</button>
-        <button class="viewBtn" data-view="day">DAY</button>
-        <button class="viewBtn" data-view="agenda">AGENDA</button>
-      </div>
-    </header>
+      <input type="file" id="fileInput" accept="image/*" style="position:absolute;left:-9999px;opacity:0;">
 
-    <div class="weekDays">
-      <div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div>
+      <div id="fileInfoBox" class="file-info">
+        <div class="file-info-icon"><i class="fas fa-image"></i></div>
+        <div class="file-info-name" id="fileNameSpan">—</div>
+        <i class="fas fa-check-circle file-info-check"></i>
+      </div>
+
+      <div class="panel-title">Tuning</div>
+
+      <div class="sensitivity-wrap">
+        <div class="sensitivity-label">
+          <span>Strictness</span>
+          <span class="sensitivity-value" id="sensValue">50</span>
+        </div>
+        <input type="range" id="sensitivity" min="1" max="100" value="50">
+      </div>
+
+      <div class="panel-title">Actions</div>
+
+      <div class="btn-group">
+        <button id="removeBgBtn" class="btn btn-primary" disabled>
+          <i class="fas fa-eraser"></i> Remove Background
+        </button>
+        <button id="resetBtn" class="btn btn-secondary">
+          <i class="fas fa-sync-alt"></i> Clear All
+        </button>
+      </div>
+
+      <div class="security-note">
+        <i class="fas fa-shield-alt"></i> On-device · Zero uploads · No internet
+      </div>
     </div>
 
-    <div id="calendarGrid"></div>
-  </main>
+    <div class="preview-panel">
+      <div class="preview-header">
+        <div class="preview-title"><i class="fas fa-eye"></i> Preview</div>
+        <div class="preview-badge">TRANSPARENT BG</div>
+      </div>
 
-  <nav class="tabbar" id="tabbar">
-    <button data-view="month" class="active">
-      <span class="icon">▦</span>
-      <span>MONTH</span>
-    </button>
-    <button data-view="week">
-      <span class="icon">▤</span>
-      <span>WEEK</span>
-    </button>
-    <button data-view="day">
-      <span class="icon">◼</span>
-      <span>DAY</span>
-    </button>
-    <button data-view="agenda">
-      <span class="icon">≡</span>
-      <span>AGENDA</span>
-    </button>
-  </nav>
+      <div class="canvas-stage">
+        <canvas id="resultCanvas" width="500" height="380"></canvas>
+      </div>
+
+      <div class="result-actions">
+        <button id="downloadBtn" class="btn btn-success" disabled>
+          <i class="fas fa-download"></i> Save PNG
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <div class="status-item"><i class="fas fa-circle"></i> Trenne v1.0</div>
+    <div class="status-item"><i class="fas fa-shield-alt"></i> 100% offline · Pure JS</div>
+    <div class="status-item"><i class="fas fa-bolt"></i> Zero dependencies</div>
+  </div>
 </div>
 
-<div class="modal hidden" id="eventModal">
-  <div class="modalContent">
-    <h2 id="modalTitle">Event</h2>
-    <input type="text" id="eventTitle" placeholder="TITLE *" autocomplete="off">
-    <textarea id="eventDescription" placeholder="DESCRIPTION" rows="3"></textarea>
-    <input type="date" id="eventDate">
-    <select id="recurringSelect">
-      <option value="none">NO REPEAT</option>
-      <option value="daily">DAILY</option>
-      <option value="weekly">WEEKLY</option>
-      <option value="monthly">MONTHLY</option>
-    </select>
-    <input type="color" id="eventColor" value="#ff4b00">
-    <div class="modalActions">
-      <button id="saveEventBtn">◼ SAVE</button>
-      <button id="cancelBtn">CANCEL</button>
-      <button id="deleteEventBtn">DELETE</button>
+<!-- ============ SAVE FALLBACK MODAL ============ -->
+<div class="save-modal" id="saveModal">
+  <div class="save-modal-inner">
+    <div class="save-modal-title"><i class="fas fa-download"></i> Save your PNG</div>
+    <div class="save-modal-desc">
+      If the automatic download didn't start (some browsers block downloads from local files),
+      <strong>right-click the image below</strong> and choose <strong>"Save image as…"</strong>.
+      Or click the download button to try again.
+    </div>
+    <div class="save-modal-img-wrap">
+      <img id="saveModalImg" alt="Removed background preview">
+    </div>
+    <div class="save-modal-actions">
+      <button id="modalDownloadBtn" class="btn btn-success">
+        <i class="fas fa-download"></i> Try download again
+      </button>
+      <button id="modalCloseBtn" class="btn btn-secondary">
+        <i class="fas fa-times"></i> Close
+      </button>
     </div>
   </div>
 </div>
 
 <script>
-/* ============================================================
-   RITMO — main
-   ============================================================ */
-(function () {
-  "use strict";
+(function() {
+  'use strict';
 
-  const calendarGrid = document.getElementById("calendarGrid");
-  const monthYear    = document.getElementById("monthYear");
-  const modal        = document.getElementById("eventModal");
-  const searchInput  = document.getElementById("searchInput");
-  const yearSelector = document.getElementById("yearSelector");
-  const htmlEl       = document.documentElement;
-  const sidebar      = document.getElementById("sidebar");
-  const menuToggle   = document.getElementById("menuToggle");
-  const sideBackdrop = document.getElementById("sideBackdrop");
-  const tabbar       = document.getElementById("tabbar");
+  var fileInput = document.getElementById('fileInput');
+  var uploadTrigger = document.getElementById('uploadTrigger');
+  var fileInfoBox = document.getElementById('fileInfoBox');
+  var fileNameSpan = document.getElementById('fileNameSpan');
+  var removeBtn = document.getElementById('removeBgBtn');
+  var resetBtn = document.getElementById('resetBtn');
+  var downloadBtn = document.getElementById('downloadBtn');
+  var resultCanvas = document.getElementById('resultCanvas');
+  var ctx = resultCanvas.getContext('2d', { willReadFrequently: true });
+  var sensSlider = document.getElementById('sensitivity');
+  var sensValue = document.getElementById('sensValue');
 
-  let currentDate = new Date();
-  let currentView = "month";
-  let events      = [];
-  let editingId   = null;
+  var saveModal = document.getElementById('saveModal');
+  var saveModalImg = document.getElementById('saveModalImg');
+  var modalDownloadBtn = document.getElementById('modalDownloadBtn');
+  var modalCloseBtn = document.getElementById('modalCloseBtn');
 
-  /* ---------- STORAGE ---------- */
-  function loadEvents() {
-    try { events = JSON.parse(localStorage.getItem("ritmo_events")) || []; }
-    catch { events = []; }
-    if (!Array.isArray(events)) events = [];
-  }
-  function persistEvents() {
-    try { localStorage.setItem("ritmo_events", JSON.stringify(events)); } catch (_) {}
-  }
-  function saveEvents() {
-    persistEvents();
-    renderCurrentView();
-  }
+  var originalImageData = null;
+  var originalWidth = 0, originalHeight = 0;
+  var currentFile = null;
+  var isProcessing = false;
+  var lastResultDataURL = null;
 
-  /* ---------- DATE HELPERS ---------- */
-  const pad = n => String(n).padStart(2, "0");
-  const dateKeyFromParts = (y, m, d) => `${y}-${pad(m)}-${pad(d)}`;
-  const dateKeyFromDate  = dt => dateKeyFromParts(dt.getFullYear(), dt.getMonth() + 1, dt.getDate());
+  // ================================================================
+  //  PURE-JS BACKGROUND REMOVER (unchanged algorithm)
+  // ================================================================
+  function removeBackground(srcData, width, height, strictness) {
+    var N = width * height;
+    var data = srcData.data;
 
-  function todayIST() {
-    return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
-  }
-  const todayKey = todayIST;
+    var borderPct = 0.08;
+    var bx = Math.max(2, Math.floor(width * borderPct));
+    var by = Math.max(2, Math.floor(height * borderPct));
 
-  function formatYearWithEra(year) {
-    if (year < 0)  return `${Math.abs(year)} BCE`;
-    if (year === 0) return `1 BCE`;
-    return `${year} CE`;
-  }
-  function parseDateKey(key) {
-    const [y, m, d] = key.split("-").map(Number);
-    return { y, m, d };
-  }
-
-  /* ---------- YEAR SELECTOR ---------- */
-  function populateYearSelector(centerYear) {
-    const RANGE = 250;
-    const frag = document.createDocumentFragment();
-    yearSelector.innerHTML = "";
-    for (let y = centerYear - RANGE; y <= centerYear + RANGE; y++) {
-      const opt = document.createElement("option");
-      opt.value = y;
-      opt.textContent = y < 0 ? `${Math.abs(y)} BCE` : (y === 0 ? "1 BCE" : `${y} CE`);
-      if (y === centerYear) opt.selected = true;
-      frag.appendChild(opt);
-    }
-    yearSelector.appendChild(frag);
-  }
-  function setCurrentYear(y) {
-    const nd = new Date(currentDate);
-    nd.setFullYear(y);
-    currentDate = nd;
-    populateYearSelector(y);
-    renderCurrentView();
-  }
-
-  /* ---------- RECURRENCE ---------- */
-  function expandRecurring(baseEvents) {
-    const out = [];
-    const horizon = new Date();
-    horizon.setFullYear(horizon.getFullYear() + 3);
-    baseEvents.forEach(ev => {
-      if (!ev || !ev.date) return;
-      out.push({ ...ev });
-      if (!ev.recurring || ev.recurring === "none") return;
-      const { y, m, d } = parseDateKey(ev.date);
-      let cur = new Date(y, m - 1, d);
-      if (isNaN(cur.getTime())) return;
-      const step = dt => {
-        if (ev.recurring === "daily")   dt.setDate(dt.getDate() + 1);
-        if (ev.recurring === "weekly")  dt.setDate(dt.getDate() + 7);
-        if (ev.recurring === "monthly") dt.setMonth(dt.getMonth() + 1);
-      };
-      step(cur);
-      let safety = 0;
-      while (cur <= horizon && safety++ < 2000) {
-        out.push({
-          ...ev,
-          id: ev.id + "__" + dateKeyFromDate(cur),
-          date: dateKeyFromDate(cur),
-          recurringParent: ev.id
-        });
-        step(cur);
+    var samplesR = [], samplesG = [], samplesB = [];
+    for (var y = 0; y < height; y++) {
+      for (var x = 0; x < width; x++) {
+        if (x < bx || x >= width - bx || y < by || y >= height - by) {
+          var i = (y * width + x) * 4;
+          samplesR.push(data[i]);
+          samplesG.push(data[i + 1]);
+          samplesB.push(data[i + 2]);
+        }
       }
-    });
-    return out;
-  }
-
-  function getFilteredEvents() {
-    const expanded = expandRecurring(events);
-    const q = searchInput.value.trim().toLowerCase();
-    if (!q) return expanded;
-    return expanded.filter(ev => (ev.title || "").toLowerCase().includes(q));
-  }
-
-  /* ---------- UTIL ---------- */
-  function pickTextColor(hex) {
-    if (!hex || hex[0] !== "#" || hex.length < 7) return "#fff";
-    const r = parseInt(hex.slice(1, 3), 16);
-    const g = parseInt(hex.slice(3, 5), 16);
-    const b = parseInt(hex.slice(5, 7), 16);
-    return (0.299 * r + 0.587 * g + 0.114 * b) > 160 ? "#14120d" : "#fff";
-  }
-  const escapeHtml = s => String(s).replace(/[&<>"']/g, c => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-  })[c]);
-
-  /* ---------- VIEW SYNC ---------- */
-  function setView(view) {
-    currentView = view;
-    document.querySelectorAll(".viewBtn").forEach(b => {
-      b.classList.toggle("active", b.dataset.view === view);
-    });
-    if (tabbar) {
-      tabbar.querySelectorAll("button").forEach(b => {
-        b.classList.toggle("active", b.dataset.view === view);
-      });
     }
-    renderCurrentView();
-  }
+    if (samplesR.length === 0) return srcData;
 
-  /* ---------- ROUTER ---------- */
-  function renderCurrentView() {
-    if (currentView === "month")  return renderMonthView();
-    if (currentView === "week")   return renderWeekView();
-    if (currentView === "day")    return renderDayView();
-    if (currentView === "agenda") return renderAgendaView();
-  }
-
-  /* ---------- MONTH ---------- */
-  function renderMonthView() {
-    const y = currentDate.getFullYear();
-    const m = currentDate.getMonth();
-    const firstDow = new Date(y, m, 1).getDay();
-    const lastDay  = new Date(y, m + 1, 0).getDate();
-
-    monthYear.textContent =
-      `${currentDate.toLocaleString("default", { month: "long" }).toUpperCase()} / ${formatYearWithEra(y).toUpperCase()}`;
-
-    calendarGrid.innerHTML = "";
-    calendarGrid.style.gridTemplateColumns = "repeat(7, minmax(0, 1fr))";
-
-    for (let i = 0; i < firstDow; i++) {
-      const blank = document.createElement("div");
-      blank.className = "dayCell";
-      blank.style.opacity = "0.22";
-      blank.style.cursor = "default";
-      blank.style.backgroundImage = "repeating-linear-gradient(45deg, transparent 0 4px, var(--line-soft) 4px 5px)";
-      calendarGrid.appendChild(blank);
+    var sub = [];
+    var stride = Math.max(1, Math.floor(samplesR.length / 5000));
+    for (var k = 0; k < samplesR.length; k += stride) {
+      sub.push([samplesR[k], samplesG[k], samplesB[k]]);
     }
 
-    const filtered = getFilteredEvents();
-    const tk = todayKey();
+    var K = 4;
+    var centroids = [];
+    for (var c = 0; c < K; c++) {
+      var idx = Math.floor((c + 0.5) * sub.length / K);
+      centroids.push(sub[Math.min(idx, sub.length - 1)].slice());
+    }
 
-    for (let day = 1; day <= lastDay; day++) {
-      const cell = document.createElement("div");
-      cell.className = "dayCell";
-      const key = dateKeyFromParts(y, m + 1, day);
-      cell.dataset.date = key;
-      if (key === tk) cell.classList.add("today-highlight");
-
-      const num = document.createElement("div");
-      num.className = "dayNumber";
-      num.textContent = pad(day);
-      if (key === tk) {
-        const b = document.createElement("span");
-        b.className = "today-icon";
-        b.textContent = "◉";
-        num.appendChild(b);
+    var assign = new Array(sub.length);
+    for (var iter = 0; iter < 10; iter++) {
+      for (var s = 0; s < sub.length; s++) {
+        var bestK = 0, bestD = Infinity;
+        for (var kk = 0; kk < K; kk++) {
+          var dr = sub[s][0] - centroids[kk][0];
+          var dg = sub[s][1] - centroids[kk][1];
+          var db = sub[s][2] - centroids[kk][2];
+          var d = dr*dr + dg*dg + db*db;
+          if (d < bestD) { bestD = d; bestK = kk; }
+        }
+        assign[s] = bestK;
       }
-      cell.appendChild(num);
-
-      filtered.filter(ev => ev.date === key).forEach(ev => {
-        const chip = document.createElement("div");
-        chip.className = "eventChip";
-        chip.style.background = ev.color || "#14120d";
-        chip.style.color = pickTextColor(ev.color || "#14120d");
-        chip.textContent = ev.title + (ev.recurring && ev.recurring !== "none" ? " ↻" : "");
-        chip.draggable = true;
-        chip.dataset.eventId = ev.recurringParent || ev.id;
-        chip.addEventListener("dragstart", e => {
-          e.stopPropagation();
-          e.dataTransfer.setData("text/plain", String(ev.recurringParent || ev.id));
-        });
-        cell.appendChild(chip);
-      });
-
-      calendarGrid.appendChild(cell);
-    }
-  }
-
-  /* ---------- WEEK ---------- */
-  function renderWeekView() {
-    const start = new Date(currentDate);
-    start.setDate(currentDate.getDate() - currentDate.getDay());
-
-    monthYear.textContent =
-      `WK / ${start.toDateString().toUpperCase()} / ${formatYearWithEra(currentDate.getFullYear()).toUpperCase()}`;
-
-    calendarGrid.innerHTML = "";
-    calendarGrid.style.gridTemplateColumns = "repeat(7, minmax(0, 1fr))";
-
-    const filtered = getFilteredEvents();
-    const tk = todayKey();
-
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(start);
-      d.setDate(start.getDate() + i);
-      const key = dateKeyFromDate(d);
-      const cell = document.createElement("div");
-      cell.className = "dayCell";
-      cell.dataset.date = key;
-      if (key === tk) cell.classList.add("today-highlight");
-
-      const head = document.createElement("div");
-      head.className = "dayNumber";
-      head.textContent = d.toLocaleDateString("en-US", {
-        weekday: "short", month: "numeric", day: "numeric"
-      }).toUpperCase();
-      if (key === tk) {
-        const b = document.createElement("span");
-        b.className = "today-icon"; b.textContent = "◉";
-        head.appendChild(b);
+      var sr = new Array(K).fill(0), sg = new Array(K).fill(0), sb = new Array(K).fill(0), cn = new Array(K).fill(0);
+      for (var s2 = 0; s2 < sub.length; s2++) {
+        var ak = assign[s2];
+        sr[ak] += sub[s2][0]; sg[ak] += sub[s2][1]; sb[ak] += sub[s2][2]; cn[ak]++;
       }
-      cell.appendChild(head);
-
-      filtered.filter(ev => ev.date === key).forEach(ev => {
-        const chip = document.createElement("div");
-        chip.className = "eventChip";
-        chip.style.background = ev.color || "#14120d";
-        chip.style.color = pickTextColor(ev.color || "#14120d");
-        chip.textContent = ev.title;
-        cell.appendChild(chip);
-      });
-
-      calendarGrid.appendChild(cell);
-    }
-  }
-
-  /* ---------- DAY ---------- */
-  function renderDayView() {
-    const key = dateKeyFromDate(currentDate);
-    monthYear.textContent =
-      `${currentDate.toDateString().toUpperCase()} / ${formatYearWithEra(currentDate.getFullYear()).toUpperCase()}`;
-
-    calendarGrid.innerHTML = "";
-    calendarGrid.style.gridTemplateColumns = "1fr";
-
-    const cell = document.createElement("div");
-    cell.className = "dayCell";
-    cell.style.minHeight = "60vh";
-    cell.style.cursor = "default";
-    if (key === todayKey()) cell.classList.add("today-highlight");
-
-    const h = document.createElement("h3");
-    h.style.cssText = "font-family:'Archivo Black',sans-serif;font-size:clamp(1rem,4vw,1.4rem);font-weight:400;letter-spacing:-0.02em;text-transform:uppercase;margin-bottom:16px;border-bottom:2px solid var(--ink);padding-bottom:8px;word-break:break-word;";
-    h.textContent = `▸ ${currentDate.toDateString()}`;
-    if (key === todayKey()) {
-      const b = document.createElement("span");
-      b.className = "today-icon";
-      b.style.marginLeft = "10px";
-      b.textContent = "◉ TODAY";
-      h.appendChild(b);
-    }
-    cell.appendChild(h);
-
-    getFilteredEvents().filter(ev => ev.date === key).forEach(ev => {
-      const chip = document.createElement("div");
-      chip.className = "eventChip";
-      chip.style.cssText = `background:${ev.color || "#14120d"};color:${pickTextColor(ev.color || "#14120d")};padding:14px;font-size:0.8rem;margin-bottom:8px;word-break:break-word;`;
-      chip.textContent = ev.title;
-      if (ev.description) {
-        const desc = document.createElement("div");
-        desc.style.cssText = "margin-top:6px;font-weight:500;font-size:0.68rem;opacity:0.9;text-transform:none;letter-spacing:0;";
-        desc.textContent = ev.description;
-        chip.appendChild(desc);
+      for (var k3 = 0; k3 < K; k3++) {
+        if (cn[k3] > 0) {
+          centroids[k3][0] = sr[k3] / cn[k3];
+          centroids[k3][1] = sg[k3] / cn[k3];
+          centroids[k3][2] = sb[k3] / cn[k3];
+        }
       }
-      cell.appendChild(chip);
-    });
-
-    calendarGrid.appendChild(cell);
-  }
-
-  /* ---------- AGENDA ---------- */
-  function renderAgendaView() {
-    const sorted = [...getFilteredEvents()].sort((a, b) => {
-      const A = a.date.split("-").map(Number);
-      const B = b.date.split("-").map(Number);
-      if (A[0] !== B[0]) return A[0] - B[0];
-      if (A[1] !== B[1]) return A[1] - B[1];
-      return A[2] - B[2];
-    });
-
-    monthYear.textContent = "AGENDA / BCE → ∞";
-    calendarGrid.innerHTML = "";
-    calendarGrid.style.gridTemplateColumns = "1fr";
-
-    const wrap = document.createElement("div");
-    wrap.style.padding = "1rem";
-    if (!sorted.length) {
-      wrap.innerHTML = "<p style='text-transform:uppercase;font-weight:700;padding:1rem;border:2px dashed var(--mute);'>// NO EVENTS ACROSS TIMELINE.</p>";
     }
 
-    const tk = todayKey();
-    sorted.forEach((ev, i) => {
-      const card = document.createElement("div");
-      card.style.cssText = "background:var(--paper);border:2px solid var(--ink);margin:8px 0;padding:14px 16px;display:flex;gap:12px;align-items:flex-start;box-shadow:4px 4px 0 var(--ink);";
+    var weights = new Array(K).fill(0);
+    for (var s3 = 0; s3 < sub.length; s3++) weights[assign[s3]]++;
 
-      const y = parseInt(ev.date.split("-")[0], 10);
-      const era = y < 0 ? `${Math.abs(y)} BCE` : (y === 0 ? "1 BCE" : `${y} CE`);
-      const isToday = ev.date === tk;
+    var bgColors = [];
+    for (var k4 = 0; k4 < K; k4++) {
+      if (weights[k4] / sub.length > 0.05) {
+        bgColors.push(centroids[k4]);
+      }
+    }
+    if (bgColors.length === 0) bgColors.push(centroids[0]);
 
-      card.innerHTML = `
-        <div style="font-family:'VT323',monospace;font-size:1.6rem;line-height:1;color:var(--accent);min-width:40px;text-align:right;flex-shrink:0;">
-          ${pad(i + 1)}
-        </div>
-        <div style="flex:1;min-width:0;">
-          <div style="font-weight:700;font-size:0.88rem;text-transform:uppercase;letter-spacing:0.04em;color:var(--ink);word-break:break-word;">
-            ${escapeHtml(ev.title)}${isToday ? ' <span class="today-icon" style="font-size:8px;padding:1px 5px;">TODAY</span>' : ''}
-          </div>
-          <div style="margin-top:6px;font-size:0.65rem;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--mute);word-break:break-word;">
-            ◼ ${ev.date} / ${era}${ev.recurring && ev.recurring !== "none" ? " / ↻ " + ev.recurring.toUpperCase() : ""}
-          </div>
-        </div>
-        <div style="width:8px;min-height:44px;background:${ev.color};border:1px solid var(--ink);flex-shrink:0;"></div>
-      `;
-      wrap.appendChild(card);
-    });
+    var totalDist = 0, cnt = 0;
+    for (var s4 = 0; s4 < sub.length; s4++) {
+      var bestD2 = Infinity;
+      for (var b = 0; b < bgColors.length; b++) {
+        var dr2 = sub[s4][0] - bgColors[b][0];
+        var dg2 = sub[s4][1] - bgColors[b][1];
+        var db2 = sub[s4][2] - bgColors[b][2];
+        var d2 = Math.sqrt(dr2*dr2 + dg2*dg2 + db2*db2);
+        if (d2 < bestD2) bestD2 = d2;
+      }
+      totalDist += bestD2;
+      cnt++;
+    }
+    var bgStd = cnt > 0 ? totalDist / cnt : 15;
 
-    calendarGrid.appendChild(wrap);
+    var sensFactor = strictness / 50;
+    var baseThreshold = Math.max(18, Math.min(120, bgStd * 2.2 + 25)) / Math.max(0.3, sensFactor);
+    var hardThreshold = baseThreshold * 1.8;
+
+    var alpha = new Float32Array(N);
+
+    for (var y2 = 0; y2 < height; y2++) {
+      for (var x2 = 0; x2 < width; x2++) {
+        var i2 = y2 * width + x2;
+        var idx2 = i2 * 4;
+        var r = data[idx2], g = data[idx2 + 1], b = data[idx2 + 2];
+
+        var minDist = Infinity;
+        for (var b2 = 0; b2 < bgColors.length; b2++) {
+          var dr3 = r - bgColors[b2][0];
+          var dg3 = g - bgColors[b2][1];
+          var db3 = b - bgColors[b2][2];
+          var dd = Math.sqrt(dr3*dr3 + dg3*dg3 + db3*db3);
+          if (dd < minDist) minDist = dd;
+        }
+
+        var a;
+        if (minDist <= baseThreshold) {
+          a = 0;
+        } else if (minDist >= hardThreshold) {
+          a = 1;
+        } else {
+          var t = (minDist - baseThreshold) / (hardThreshold - baseThreshold);
+          a = t * t * (3 - 2 * t);
+        }
+        alpha[i2] = a;
+      }
+    }
+
+    var lum = new Float32Array(N);
+    for (var i3 = 0; i3 < N; i3++) {
+      var idx3 = i3 * 4;
+      lum[i3] = 0.299 * data[idx3] + 0.587 * data[idx3 + 1] + 0.114 * data[idx3 + 2];
+    }
+    var edges = new Float32Array(N);
+    for (var y3 = 1; y3 < height - 1; y3++) {
+      for (var x3 = 1; x3 < width - 1; x3++) {
+        var i4 = y3 * width + x3;
+        var gx = (lum[i4 + 1] - lum[i4 - 1]) / 2;
+        var gy = (lum[i4 + width] - lum[i4 - width]) / 2;
+        edges[i4] = Math.sqrt(gx*gx + gy*gy);
+      }
+    }
+    for (var i5 = 0; i5 < N; i5++) {
+      if (edges[i5] > 30 && alpha[i5] > 0.05 && alpha[i5] < 0.98) {
+        alpha[i5] = Math.min(1, alpha[i5] + 0.35);
+      }
+    }
+
+    var tmp = new Float32Array(N);
+    var finalA = new Float32Array(N);
+
+    for (var y4 = 0; y4 < height; y4++) {
+      for (var x4 = 0; x4 < width; x4++) {
+        var i6 = y4 * width + x4;
+        var s5 = 0, w = 0;
+        for (var kx = -2; kx <= 2; kx++) {
+          var nx = x4 + kx;
+          if (nx < 0 || nx >= width) continue;
+          var weight = [1, 4, 6, 4, 1][kx + 2];
+          s5 += alpha[y4 * width + nx] * weight;
+          w += weight;
+        }
+        tmp[i6] = s5 / w;
+      }
+    }
+    for (var y5 = 0; y5 < height; y5++) {
+      for (var x5 = 0; x5 < width; x5++) {
+        var i7 = y5 * width + x5;
+        var s6 = 0, w2 = 0;
+        for (var ky = -2; ky <= 2; ky++) {
+          var ny = y5 + ky;
+          if (ny < 0 || ny >= height) continue;
+          var weight2 = [1, 4, 6, 4, 1][ky + 2];
+          s6 += tmp[ny * width + x5] * weight2;
+          w2 += weight2;
+        }
+        finalA[i7] = s6 / w2;
+      }
+    }
+
+    for (var i8 = 0; i8 < N; i8++) {
+      alpha[i8] = alpha[i8] * 0.4 + finalA[i8] * 0.6;
+    }
+
+    var out = new Uint8ClampedArray(data.length);
+    out.set(data);
+
+    for (var i9 = 0; i9 < N; i9++) {
+      var a2 = alpha[i9];
+      var idx9 = i9 * 4;
+
+      if (a2 > 0.05 && a2 < 0.95) {
+        var r2 = data[idx9], g2 = data[idx9 + 1], b2 = data[idx9 + 2];
+        var nearestB = 0, nearestD = Infinity;
+        for (var b3 = 0; b3 < bgColors.length; b3++) {
+          var dr4 = r2 - bgColors[b3][0];
+          var dg4 = g2 - bgColors[b3][1];
+          var db4 = b2 - bgColors[b3][2];
+          var d4 = dr4*dr4 + dg4*dg4 + db4*db4;
+          if (d4 < nearestD) { nearestD = d4; nearestB = b3; }
+        }
+        var bgR = bgColors[nearestB][0];
+        var bgG = bgColors[nearestB][1];
+        var bgB = bgColors[nearestB][2];
+        var push = 1.12;
+        out[idx9]     = Math.max(0, Math.min(255, bgR + (r2 - bgR) * push));
+        out[idx9 + 1] = Math.max(0, Math.min(255, bgG + (g2 - bgG) * push));
+        out[idx9 + 2] = Math.max(0, Math.min(255, bgB + (b2 - bgB) * push));
+      }
+
+      out[idx9 + 3] = Math.round(a2 * 255);
+    }
+
+    return new ImageData(out, width, height);
   }
 
-  /* ---------- MODAL ---------- */
-  function openModal(editEv = null, prefDate = null) {
-    const titleEl = document.getElementById("modalTitle");
-    const titleInput = document.getElementById("eventTitle");
-    const descInput = document.getElementById("eventDescription");
-    const dateInput = document.getElementById("eventDate");
-    const recSel = document.getElementById("recurringSelect");
-    const colorInput = document.getElementById("eventColor");
+  // ================================================================
+  //  UI LOGIC
+  // ================================================================
 
-    if (editEv) {
-      editingId = editEv.id;
-      titleEl.textContent = "Edit Event";
-      titleInput.value = editEv.title || "";
-      descInput.value = editEv.description || "";
-      dateInput.value = editEv.date || "";
-      recSel.value = editEv.recurring || "none";
-      colorInput.value = editEv.color || "#ff4b00";
+  function showFileInfo(file) {
+    if (file) {
+      fileNameSpan.textContent = file.name.length > 28
+        ? file.name.slice(0, 25) + '…'
+        : file.name;
+      fileInfoBox.classList.add('active');
+      removeBtn.disabled = false;
     } else {
-      editingId = null;
-      titleEl.textContent = "New Event";
-      titleInput.value = "";
-      descInput.value = "";
-      dateInput.value = prefDate || dateKeyFromDate(currentDate);
-      recSel.value = "none";
-      colorInput.value = "#ff4b00";
+      fileInfoBox.classList.remove('active');
+      removeBtn.disabled = true;
     }
-    modal.classList.remove("hidden");
-    document.body.style.overflow = "hidden";
-    setTimeout(() => titleInput.focus(), 40);
   }
 
-  function closeModal() {
-    modal.classList.add("hidden");
-    document.body.style.overflow = "";
-  }
-
-  function saveFromModal() {
-    const title = document.getElementById("eventTitle").value.trim();
-    if (!title) { alert("TITLE REQUIRED"); return; }
-    const dateVal = document.getElementById("eventDate").value;
-    if (!dateVal) { alert("DATE REQUIRED"); return; }
-
-    const payload = {
-      title,
-      description: document.getElementById("eventDescription").value,
-      date: dateVal,
-      recurring: document.getElementById("recurringSelect").value,
-      color: document.getElementById("eventColor").value
-    };
-
-    if (editingId) {
-      const idx = events.findIndex(e => e.id === editingId);
-      if (idx >= 0) events[idx] = { ...events[idx], ...payload };
-    } else {
-      events.push({
-        id: "ev_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7),
-        ...payload
-      });
-    }
-    saveEvents();
-    closeModal();
-  }
-
-  function deleteFromModal() {
-    if (!editingId) return;
-    if (!confirm("DELETE THIS EVENT?")) return;
-    events = events.filter(e => e.id !== editingId);
-    saveEvents();
-    closeModal();
-  }
-
-  /* ---------- WIRING ---------- */
-  document.getElementById("newEventBtn").onclick = () => openModal(null, dateKeyFromDate(currentDate));
-  document.getElementById("saveEventBtn").onclick = saveFromModal;
-  document.getElementById("cancelBtn").onclick = closeModal;
-  document.getElementById("deleteEventBtn").onclick = deleteFromModal;
-
-  document.getElementById("prevBtn").onclick = () => {
-    if (currentView === "month")     currentDate.setMonth(currentDate.getMonth() - 1);
-    else if (currentView === "week") currentDate.setDate(currentDate.getDate() - 7);
-    else                             currentDate.setDate(currentDate.getDate() - 1);
-    populateYearSelector(currentDate.getFullYear());
-    renderCurrentView();
-  };
-  document.getElementById("nextBtn").onclick = () => {
-    if (currentView === "month")     currentDate.setMonth(currentDate.getMonth() + 1);
-    else if (currentView === "week") currentDate.setDate(currentDate.getDate() + 7);
-    else                             currentDate.setDate(currentDate.getDate() + 1);
-    populateYearSelector(currentDate.getFullYear());
-    renderCurrentView();
-  };
-  document.getElementById("todayBtn").onclick = () => {
-    const parts = new Intl.DateTimeFormat("en-CA", {
-      timeZone: "Asia/Kolkata",
-      year: "numeric", month: "2-digit", day: "2-digit"
-    }).format(new Date()).split("-").map(Number);
-    currentDate = new Date(parts[0], parts[1] - 1, parts[2]);
-    populateYearSelector(currentDate.getFullYear());
-    renderCurrentView();
-  };
-
-  document.getElementById("yearMinusBtn").onclick = () => setCurrentYear(currentDate.getFullYear() - 100);
-  document.getElementById("yearPlusBtn").onclick  = () => setCurrentYear(currentDate.getFullYear() + 100);
-  document.getElementById("decadeMinusBtn").onclick = () => setCurrentYear(currentDate.getFullYear() - 10);
-  document.getElementById("decadePlusBtn").onclick  = () => setCurrentYear(currentDate.getFullYear() + 10);
-
-  yearSelector.onchange = () => setCurrentYear(parseInt(yearSelector.value, 10));
-
-  document.querySelectorAll(".viewBtn").forEach(btn => {
-    btn.addEventListener("click", () => setView(btn.dataset.view));
-  });
-
-  if (tabbar) {
-    tabbar.querySelectorAll("button").forEach(btn => {
-      btn.addEventListener("click", () => setView(btn.dataset.view));
+  function fileToImage(file) {
+    return new Promise(function(resolve, reject) {
+      var url = URL.createObjectURL(file);
+      var img = new Image();
+      img.onload = function() { resolve({ img: img, url: url }); };
+      img.onerror = function(err) { URL.revokeObjectURL(url); reject(err); };
+      img.src = url;
     });
   }
 
-  calendarGrid.addEventListener("click", e => {
-    const chip = e.target.closest(".eventChip");
-    if (chip) {
-      const id = chip.dataset.eventId;
-      const ev = events.find(x => x.id === id);
-      if (ev) openModal(ev);
+  function drawImageToCanvas(img) {
+    var maxDim = 900;
+    var w = img.width, h = img.height;
+    if (w > maxDim) { h = Math.round(h * maxDim / w); w = maxDim; }
+    if (h > maxDim) { w = Math.round(w * maxDim / h); h = maxDim; }
+    resultCanvas.width = w;
+    resultCanvas.height = h;
+    ctx.clearRect(0, 0, w, h);
+    ctx.drawImage(img, 0, 0, w, h);
+    return ctx.getImageData(0, 0, w, h);
+  }
+
+  function handleFile(file) {
+    if (!file) return;
+    if (!file.type || file.type.indexOf('image/') !== 0) {
+      alert('Please select a valid image (JPEG, PNG, WebP).');
       return;
     }
-    const cell = e.target.closest(".dayCell");
-    if (cell && cell.dataset.date) openModal(null, cell.dataset.date);
-  });
-
-  calendarGrid.addEventListener("dragover", e => {
-    if (e.target.closest(".dayCell")) e.preventDefault();
-  });
-  calendarGrid.addEventListener("drop", e => {
-    const cell = e.target.closest(".dayCell");
-    if (!cell || !cell.dataset.date) return;
-    e.preventDefault();
-    const id = e.dataTransfer.getData("text/plain");
-    if (!id) return;
-    const ev = events.find(x => x.id === id);
-    if (ev) { ev.date = cell.dataset.date; saveEvents(); }
-  });
-
-  searchInput.oninput = () => renderCurrentView();
-
-  /* ---------- THEME ---------- */
-  const themeBtn = document.getElementById("themeBtn");
-
-  function applyTheme(theme) {
-    htmlEl.setAttribute("data-theme", theme);
-    themeBtn.textContent = theme === "dark" ? "◑ LIGHT MODE" : "◐ DARK MODE";
-    const metaTheme = document.querySelector('meta[name="theme-color"]');
-    if (metaTheme) {
-      metaTheme.setAttribute("content", theme === "dark" ? "#131210" : "#ff4b00");
+    if (file.size > 10 * 1024 * 1024) {
+      alert('File too large. Max 10MB.');
+      return;
     }
+    currentFile = file;
+    showFileInfo(file);
+
+    fileToImage(file).then(function(res) {
+      var imgData = drawImageToCanvas(res.img);
+      URL.revokeObjectURL(res.url);
+      originalImageData = imgData;
+      originalWidth = imgData.width;
+      originalHeight = imgData.height;
+      downloadBtn.disabled = true;
+      lastResultDataURL = null;
+    }).catch(function(err) {
+      console.error(err);
+      alert('Failed to load image.');
+    });
   }
 
-  themeBtn.addEventListener("click", () => {
-    const cur = htmlEl.getAttribute("data-theme") === "dark" ? "dark" : "light";
-    const next = cur === "dark" ? "light" : "dark";
-    try { localStorage.setItem("ritmo_theme", next); } catch (_) {}
-    applyTheme(next);
-  });
+  function performRemoval() {
+    if (!originalImageData || isProcessing) return;
+    isProcessing = true;
+    removeBtn.disabled = true;
+    var origHTML = removeBtn.innerHTML;
+    removeBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Processing…';
 
-  /* Follow system preference if user hasn't picked a theme */
-  if (window.matchMedia) {
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const handler = (e) => {
-      let hasSaved = null;
-      try { hasSaved = localStorage.getItem("ritmo_theme"); } catch (_) {}
-      if (!hasSaved) applyTheme(e.matches ? "dark" : "light");
-    };
-    if (mq.addEventListener) mq.addEventListener("change", handler);
-    else if (mq.addListener) mq.addListener(handler);
-  }
-
-  /* ---------- EXPORT ---------- */
-  function exportEvents() {
-    const json = JSON.stringify(events, null, 2);
-    const blob = new Blob([json], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "ritmo_backup_" + todayIST() + ".json";
-    a.rel = "noopener";
-    a.style.display = "none";
-
-    document.body.appendChild(a);
-    a.click();
-
-    setTimeout(() => {
-      try { document.body.removeChild(a); } catch (_) {}
-      URL.revokeObjectURL(url);
-    }, 250);
-  }
-
-  /* ---------- IMPORT ---------- */
-  function importEvents(file) {
-    const reader = new FileReader();
-    reader.onload = ev => {
+    setTimeout(function() {
       try {
-        const data = JSON.parse(ev.target.result);
-        if (!Array.isArray(data)) { alert("INVALID FILE · EXPECTED ARRAY"); return; }
-        const cleaned = data
-          .filter(x => x && typeof x === "object" && typeof x.date === "string" && typeof x.title === "string")
-          .map(x => ({
-            id: x.id || ("ev_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7)),
-            title: x.title,
-            description: x.description || "",
-            date: x.date,
-            recurring: x.recurring || "none",
-            color: x.color || "#ff4b00"
-          }));
-        events = cleaned;
-        saveEvents();
-        alert("IMPORTED " + cleaned.length + " EVENTS");
+        var strictness = parseInt(sensSlider.value, 10);
+        var srcCopy = new ImageData(
+          new Uint8ClampedArray(originalImageData.data),
+          originalWidth,
+          originalHeight
+        );
+        var result = removeBackground(srcCopy, originalWidth, originalHeight, strictness);
+        ctx.putImageData(result, 0, 0);
+
+        // Cache the data URL for download/fallback
+        try {
+          lastResultDataURL = resultCanvas.toDataURL('image/png');
+        } catch (e) {
+          console.warn('toDataURL failed:', e);
+          lastResultDataURL = null;
+        }
+
+        downloadBtn.disabled = false;
       } catch (err) {
-        alert("INVALID FILE · " + (err.message || "PARSE ERROR"));
+        console.error(err);
+        alert('Removal failed: ' + (err && err.message ? err.message : err));
       }
-    };
-    reader.onerror = () => alert("COULD NOT READ FILE");
-    reader.readAsText(file);
+      removeBtn.innerHTML = origHTML;
+      removeBtn.disabled = false;
+      isProcessing = false;
+    }, 30);
   }
 
-  document.getElementById("exportBtn").onclick = exportEvents;
-  document.getElementById("importBtn").onclick = () => document.getElementById("importFile").click();
-  document.getElementById("importFile").onchange = e => {
-    const file = e.target.files && e.target.files[0];
-    if (file) importEvents(file);
-    e.target.value = "";
-  };
+  function resetAll() {
+    fileInput.value = '';
+    currentFile = null;
+    originalImageData = null;
+    originalWidth = 500;
+    originalHeight = 380;
+    resultCanvas.width = 500;
+    resultCanvas.height = 380;
+    ctx.clearRect(0, 0, 500, 380);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, 500, 380);
+    ctx.fillStyle = '#8a8f99';
+    ctx.font = "600 18px 'Inter', sans-serif";
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('No image loaded', 250, 175);
+    ctx.font = "400 13px 'IBM Plex Mono', monospace";
+    ctx.fillStyle = '#b0b5be';
+    ctx.fillText('Upload an image to begin', 250, 205);
+    ctx.textAlign = 'left';
+    fileInfoBox.classList.remove('active');
+    removeBtn.disabled = true;
+    downloadBtn.disabled = true;
+    lastResultDataURL = null;
+  }
 
-  modal.addEventListener("click", e => { if (e.target === modal) closeModal(); });
-  document.addEventListener("keydown", e => {
-    if (e.key === "Escape") closeModal();
-  });
-
-  /* ---------- TODAY DATE READOUT (IST) ---------- */
-  const dateBigEl = document.getElementById("todayDateBig");
-  const dateSubEl = document.getElementById("todayDateSub");
-
-  function renderTodayReadout() {
-    const now = new Date();
-    const dayStr = now.toLocaleDateString("en-GB", {
-      timeZone: "Asia/Kolkata",
-      day: "2-digit"
+  // ================================================================
+  //  ROBUST DOWNLOAD
+  //  Strategy:
+  //   1. Use canvas.toBlob() -> Object URL -> anchor.download
+  //      (most reliable; works on file:// in Chrome, Firefox, Edge)
+  //   2. If that fails, fall back to a data URL link
+  //   3. If the browser blocks the download anyway, open the modal
+  //      with the image so the user can right-click and save it.
+  // ================================================================
+  function triggerBlobDownload() {
+    return new Promise(function(resolve, reject) {
+      if (typeof resultCanvas.toBlob !== 'function') {
+        return reject(new Error('toBlob not supported'));
+      }
+      resultCanvas.toBlob(function(blob) {
+        if (!blob) return reject(new Error('Blob is null'));
+        try {
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = url;
+          a.download = 'trenne_removed_bg.png';
+          a.rel = 'noopener';
+          a.style.display = 'none';
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(function() {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+          }, 1500);
+          resolve(true);
+        } catch (e) {
+          reject(e);
+        }
+      }, 'image/png');
     });
-    const monthStr = now.toLocaleDateString("en-GB", {
-      timeZone: "Asia/Kolkata",
-      month: "short"
-    }).toUpperCase();
-    const yearStr = now.toLocaleDateString("en-GB", {
-      timeZone: "Asia/Kolkata",
-      year: "numeric"
+  }
+
+  function triggerDataURLDownload() {
+    if (!lastResultDataURL) {
+      try { lastResultDataURL = resultCanvas.toDataURL('image/png'); }
+      catch (e) { return false; }
+    }
+    try {
+      var a = document.createElement('a');
+      a.href = lastResultDataURL;
+      a.download = 'trenne_removed_bg.png';
+      a.rel = 'noopener';
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function() { document.body.removeChild(a); }, 1500);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function openSaveModal() {
+    // Prepare the modal image from the canvas
+    try {
+      saveModalImg.src = resultCanvas.toDataURL('image/png');
+    } catch (e) {
+      // Fallback: draw canvas into a new canvas, then toDataURL
+      var tmp = document.createElement('canvas');
+      tmp.width = resultCanvas.width;
+      tmp.height = resultCanvas.height;
+      tmp.getContext('2d').drawImage(resultCanvas, 0, 0);
+      saveModalImg.src = tmp.toDataURL('image/png');
+    }
+    saveModal.classList.add('active');
+  }
+
+  function closeSaveModal() {
+    saveModal.classList.remove('active');
+  }
+
+  function downloadResult() {
+    if (downloadBtn.disabled) return;
+
+    // Try method 1: blob download
+    triggerBlobDownload()
+      .then(function() {
+        // Likely succeeded. Give a slight delay, then verify by checking
+        // if a data URL fallback still makes sense. Most browsers will
+        // have triggered the download by now. To be safe, we still offer
+        // the modal as an option if the user wants to right-click save.
+        // We'll only show the modal if the user explicitly asks.
+      })
+      .catch(function() {
+        // Fall back to data URL
+        if (!triggerDataURLDownload()) {
+          // Both failed - show the modal
+          openSaveModal();
+        }
+      });
+  }
+
+  function forceShowSaveModal() {
+    // "Try download again" from within the modal
+    if (!lastResultDataURL) {
+      try { lastResultDataURL = resultCanvas.toDataURL('image/png'); } catch (e) {}
+    }
+    // Try one more time
+    triggerBlobDownload().catch(function() {
+      triggerDataURLDownload();
     });
-    const weekday = now.toLocaleDateString("en-GB", {
-      timeZone: "Asia/Kolkata",
-      weekday: "short"
-    }).toUpperCase();
-
-    dateBigEl.textContent = `${dayStr} ${monthStr}`;
-    dateSubEl.textContent = `${weekday} · ${yearStr}`;
   }
 
-  /* ---------- MOBILE DRAWER ---------- */
-  function openSidebar() {
-    sidebar.classList.add("open");
-    sideBackdrop.classList.add("show");
-  }
-  function closeSidebar() {
-    sidebar.classList.remove("open");
-    sideBackdrop.classList.remove("show");
-  }
-  menuToggle.addEventListener("click", () => {
-    sidebar.classList.contains("open") ? closeSidebar() : openSidebar();
+  // Sensitivity slider display
+  sensSlider.addEventListener('input', function() {
+    sensValue.textContent = sensSlider.value;
   });
-  sideBackdrop.addEventListener("click", closeSidebar);
-  sidebar.addEventListener("click", e => {
-    if (window.innerWidth <= 1024 && e.target.closest("button")) {
-      setTimeout(closeSidebar, 130);
+
+  // File & UI wiring
+  uploadTrigger.addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    fileInput.click();
+  });
+  fileInput.addEventListener('change', function(e) {
+    if (e.target.files && e.target.files.length > 0) handleFile(e.target.files[0]);
+  });
+  removeBtn.addEventListener('click', performRemoval);
+  downloadBtn.addEventListener('click', downloadResult);
+  resetBtn.addEventListener('click', resetAll);
+
+  // Save modal wiring
+  modalDownloadBtn.addEventListener('click', forceShowSaveModal);
+  modalCloseBtn.addEventListener('click', closeSaveModal);
+  saveModal.addEventListener('click', function(e) {
+    if (e.target === saveModal) closeSaveModal();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && saveModal.classList.contains('active')) {
+      closeSaveModal();
     }
   });
-  window.addEventListener("resize", () => {
-    if (window.innerWidth > 1024) closeSidebar();
+
+  // Double-click the canvas = quick save (bonus)
+  resultCanvas.addEventListener('dblclick', function() {
+    if (!downloadBtn.disabled) downloadResult();
   });
 
-  /* ---------- EDGE-SWIPE TO OPEN DRAWER ---------- */
-  let touchStartX = 0, touchStartY = 0, touchStartT = 0;
-  document.addEventListener("touchstart", e => {
-    touchStartX = e.touches[0].clientX;
-    touchStartY = e.touches[0].clientY;
-    touchStartT = Date.now();
-  }, { passive: true });
-
-  document.addEventListener("touchend", e => {
-    const dx = e.changedTouches[0].clientX - touchStartX;
-    const dy = e.changedTouches[0].clientY - touchStartY;
-    const dt = Date.now() - touchStartT;
-
-    if (dt > 500 || Math.abs(dy) > 60) return;
-    if (window.innerWidth > 1024) return;
-
-    if (!sidebar.classList.contains("open") && touchStartX < 30 && dx > 60) {
-      openSidebar();
-      return;
-    }
-    if (sidebar.classList.contains("open") && dx < -60) {
-      closeSidebar();
-    }
-  }, { passive: true });
-
-  /* ---------- BOOT ---------- */
-  loadEvents();
-
-  // Theme: saved → system → default
-  let savedTheme = null;
-  try { savedTheme = localStorage.getItem("ritmo_theme"); } catch (_) {}
-  if (!savedTheme) {
-    savedTheme = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "dark" : "light";
-  }
-  applyTheme(savedTheme);
-
-  populateYearSelector(currentDate.getFullYear());
-
-  requestAnimationFrame(() => {
-    renderCurrentView();
-    window.addEventListener("resize", () => renderCurrentView());
+  // Drag & drop
+  ['dragenter', 'dragover'].forEach(function(ev) {
+    uploadTrigger.addEventListener(ev, function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      uploadTrigger.classList.add('dragover');
+    });
   });
+  ['dragleave', 'drop'].forEach(function(ev) {
+    uploadTrigger.addEventListener(ev, function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      uploadTrigger.classList.remove('dragover');
+    });
+  });
+  uploadTrigger.addEventListener('drop', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    var dt = e.dataTransfer;
+    if (dt && dt.files && dt.files.length > 0) handleFile(dt.files[0]);
+  });
+  window.addEventListener('dragover', function(e) { e.preventDefault(); });
+  window.addEventListener('drop', function(e) { e.preventDefault(); });
 
-  renderTodayReadout();
-  setInterval(renderTodayReadout, 60 * 60 * 1000);
-
+  resetAll();
 })();
 </script>
 </body>
